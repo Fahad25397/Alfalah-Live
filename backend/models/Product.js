@@ -1,0 +1,16 @@
+const mongoose = require('mongoose');
+
+const variantSchema = new mongoose.Schema({
+  weight: { type: String, required: true }, // e.g., "500g", "1000g"
+  price: { type: Number, required: true }   // e.g., 15, 28
+});
+
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  category: { type: String, required: true },
+  image: { type: String, required: true },
+  variants: [variantSchema] // Stores multiple weight & price options
+}, { timestamps: true });
+
+module.exports = mongoose.model('Product', productSchema);
