@@ -1,0 +1,17 @@
+# Root .gitignore
+node_modules/
+.env
+*.log
+npm-debug.log*
+.DS_Store
+
+# Backend
+backend/node_modules/
+backend/.env
+backend/*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist
+frontend/.env
+frontend/*.log

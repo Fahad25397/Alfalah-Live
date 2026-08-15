@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* Custom styles for smooth scrolling and clean font rendering */
+html {
+  scroll-behavior: smooth;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+  background-color: #fffdf7; /* Soft honey warm cream background */
+  color: #2b1f17; /* Dark warm brown text */
+  margin: 0;
+  padding: 0;
+}
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #fffdf7;
+    color: #2b1f17;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* Custom Swiper pagination color customization */
+.swiper-pagination-bullet-active {
+  background-color: #f59e0b !important;
+  width: 24px !important;
+  border-radius: 4px !important;
+}
+.swiper-pagination-bullet {
+  background-color: #ffffff;
+}
