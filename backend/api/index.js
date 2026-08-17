@@ -1,9 +1,11 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('../config/db');
 
-dotenv.config();
+// Only load .env file in local development — Vercel injects env vars natively
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const app = express();
 

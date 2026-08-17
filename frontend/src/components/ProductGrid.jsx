@@ -25,7 +25,7 @@ const ProductGrid = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('/api/products');
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/products`);
         setProducts(response.data || []);
         setLoading(false);
       } catch (err) {

@@ -38,7 +38,7 @@ const CheckoutModal = ({ isOpen, onClose }) => {
         totalAmount: totalPrice,
       };
 
-      await axios.post('/api/orders', orderData);
+      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/orders`, orderData);
       
       setLoading(false);
       setSuccess(true);

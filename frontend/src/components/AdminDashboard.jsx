@@ -42,7 +42,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get('/api/orders');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/orders`);
       setOrders(response.data);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -51,7 +51,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('/api/products');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/products`);
       setProducts(response.data);
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -86,7 +86,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await axios.put(`/api/orders/${orderId}/status`, { status: newStatus });
+      await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/orders/${orderId}/status`, { status: newStatus });
       fetchOrders();
     } catch (err) {
       alert('Failed to update order status');
@@ -157,7 +157,7 @@ const AdminDashboard = ({ onBackToShop }) => {
   const handleDeleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await axios.delete(`/api/products/${id}`);
+        await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/products/${id}`);
         fetchProducts();
       } catch (err) {
         alert('Failed to delete product');
@@ -178,9 +178,9 @@ const AdminDashboard = ({ onBackToShop }) => {
       };
 
       if (editingId) {
-        await axios.put(`/api/products/${editingId}`, payload);
+        await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/products/${editingId}`, payload);
       } else {
-        await axios.post('/api/products', payload);
+        await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/products`, payload);
       }
       setIsModalOpen(false);
       fetchProducts();
