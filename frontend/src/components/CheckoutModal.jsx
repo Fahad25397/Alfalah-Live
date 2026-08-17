@@ -38,8 +38,7 @@ const CheckoutModal = ({ isOpen, onClose }) => {
         totalAmount: totalPrice,
       };
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      await axios.post(`${apiUrl}/api/orders`, orderData);
+      await axios.post('/api/orders', orderData);
       
       setLoading(false);
       setSuccess(true);

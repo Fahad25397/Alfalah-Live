@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
-import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
 import AboutBookSection from './components/AboutBookSection';
@@ -31,13 +30,9 @@ const Storefront = () => {
   return (
     <div className="min-h-screen bg-[#faf8f5] text-[#3c2415] relative flex flex-col justify-between">
       <div>
-        <Navbar 
-          onOpenCart={() => setIsCartOpen(true)} 
-          onOpenAdmin={() => {}}
-        />
-        
+        {/* Hero already includes the Navbar internally */}
         <main>
-          <Hero />
+          <Hero onOpenCart={() => setIsCartOpen(true)} onOpenAdmin={() => navigate('/admin')} />
           <ProductGrid />
           <AboutBookSection />
           <ContactUs />
@@ -47,9 +42,9 @@ const Storefront = () => {
       {/* Solid Brown Footer Component */}
       <Footer />
 
-      <CartDrawer 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
     </div>
   );

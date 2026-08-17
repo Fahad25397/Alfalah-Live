@@ -15,11 +15,8 @@ router.get('/', async (req, res) => {
 // POST /api/products - Add a new product
 router.post('/', async (req, res) => {
   try {
-    // ✅ Added 'category' here so it extracts from the form data
-    const { name, category, price, description, image, weight } = req.body;
-    
-    // ✅ Passed 'category' into the new product instance
-    const newProduct = new Product({ name, category, price, description, image, weight });
+    const { name, category, description, image, variants } = req.body;
+    const newProduct = new Product({ name, category, description, image, variants });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
