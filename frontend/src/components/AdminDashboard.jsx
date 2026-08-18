@@ -5,7 +5,7 @@ import {
   CheckCircle, Clock, ArrowLeft, Package, Plus, Trash2, Edit2, X, Settings, Save 
 } from 'lucide-react';
 
-const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water'];
+const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dry Fruits'];
 
 const DEFAULT_CURRENCIES = {
   PKR: { label: 'PKR (₨)', symbol: '₨ ', rate: 1 },
@@ -13,6 +13,7 @@ const DEFAULT_CURRENCIES = {
   AED: { label: 'AED', symbol: 'AED ', rate: 0.013 },
   SAR: { label: 'SAR', symbol: 'SAR ', rate: 0.0135 },
 };
+
 const AdminDashboard = ({ onBackToShop }) => {
   const [activeTab, setActiveTab] = useState('orders');
   const [orders, setOrders] = useState([]);
@@ -115,7 +116,6 @@ const AdminDashboard = ({ onBackToShop }) => {
       (cat) => cat.toLowerCase() === (product.category || '').trim().toLowerCase()
     ) || 'Honey';
 
-    // Products store raw numbers (PKR base prices directly)
     let formattedVariants = product.variants && product.variants.length > 0 
       ? product.variants.map(v => ({
           weight: v.weight,
@@ -168,7 +168,6 @@ const AdminDashboard = ({ onBackToShop }) => {
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
-      // Save direct numeric values as base PKR prices
       const payload = {
         ...productForm,
         variants: productForm.variants.map(v => ({

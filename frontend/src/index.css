@@ -20,3 +20,16 @@ body {
   margin: 0;
   padding: 0;
 }
+html, body {
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth !important;
+}

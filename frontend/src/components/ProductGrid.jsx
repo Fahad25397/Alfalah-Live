@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import ProductDetailModal from './ProductDetailModal';
 
-const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water'];
+const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dryfruits'];
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
@@ -65,6 +65,7 @@ const ProductGrid = () => {
     if (tCat === 'olives' && pCat.includes('olive')) return true;
     if (tCat === 'dates' && pCat.includes('date')) return true;
     if (tCat === 'honey' && pCat.includes('honey')) return true;
+    if (tCat === 'dryfruits' && (pCat.includes('dry') || pCat.includes('fruit') || pCat.includes('pistachio') || pCat.includes('almond') || pCat.includes('cashew'))) return true;
 
     return pCat === tCat;
   };
@@ -104,7 +105,7 @@ const ProductGrid = () => {
   const scrollRow = (categoryName, direction) => {
     const container = rowRefs.current[categoryName];
     if (container) {
-      const scrollAmount = 340; // Card width + gap
+      const scrollAmount = container.clientWidth * 0.75; // Scrolls 75% of the visible container width smoothly
       container.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'

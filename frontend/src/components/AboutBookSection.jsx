@@ -8,7 +8,7 @@ const AboutBookSection = () => {
   const pages = [
     {
       title: "Who We Are",
-      content: "Founded 36 years ago in 1990 by Haji Hafeezullah, Alfalah began as a humble venture rooted in honesty and quality. Over three decades, that same dedication has shaped us into a trusted name — carrying forward a founder's vision, one generation of craftsmanship and customer trust at a time."
+      content: "Founded 36 years ago in 1990 by Gull and Son's, Alfalah began as a humble venture rooted in honesty and quality. Over three decades, that same dedication has shaped us into a trusted name — carrying forward a founder's vision, one generation of craftsmanship and customer trust at a time."
     },
     {
       title: "Our Mission",
