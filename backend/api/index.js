@@ -74,6 +74,7 @@ app.use('/api/products', require('../routes/productRoutes'));
 app.use('/products', require('../routes/productRoutes'));
 app.use('/api/orders', require('../routes/orderRoutes'));
 app.use('/orders', require('../routes/orderRoutes'));
+app.use('/api', require('../routes/seoRoutes'));
 
 if (process.env.NODE_ENV !== 'production' && require.main === module) {
   const PORT = process.env.PORT || 5000;

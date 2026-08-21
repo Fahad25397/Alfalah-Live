@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Star, ShoppingCart, ShieldCheck, Heart, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext'; // <-- Added currency hook
+import SEO from './SEO';
 
 const ProductDetailModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
@@ -9,8 +10,32 @@ const ProductDetailModal = ({ product, onClose }) => {
 
   if (!product) return null;
 
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "image": product.image,
+    "description": product.description,
+    "sku": product._id,
+    "offers": {
+      "@type": "Offer",
+      "url": `https://alfalah-store.vercel.app/?product=${product._id}`,
+      "priceCurrency": "PKR",
+      "price": product.price,
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <SEO 
+        title={`${product.name} | Alfalah Store`}
+        description={product.description}
+        url={`https://alfalah-store.vercel.app/?product=${product._id}`}
+        image={product.image}
+        schema={productSchema}
+      />
       <div className="bg-[#fffdfa] w-full max-w-2xl rounded-3xl shadow-2xl border border-amber-900/20 overflow-hidden relative p-6 md:p-8">
         
         {/* Close Button */}

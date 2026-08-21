@@ -9,6 +9,7 @@ import ContactUs from './components/ContactUs';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import AdminDashboard from './components/AdminDashboard';
+import SEO from './components/SEO';
 import { Lock, ShieldCheck } from 'lucide-react';
 
 // Public Storefront Component
@@ -28,8 +29,30 @@ const Storefront = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [navigate]);
 
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Alfalah Store",
+    "image": "https://alfalah-store.vercel.app/logo.png",
+    "url": "https://alfalah-store.vercel.app/",
+    "telephone": "+923000000000",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Lahore",
+      "addressCountry": "PK"
+    },
+    "description": "Premium organic products including pure Sidr Honey, Dates, Zamzam water, and more.",
+    "priceRange": "$$"
+  };
+
   return (
     <div className="min-h-screen bg-[#faf8f5] text-[#3c2415] relative flex flex-col justify-between">
+      <SEO 
+        title="Alfalah - Premium Organic Honey & Natural Products"
+        description="Shop pure Sidr Honey, Zamzam water, premium dates, and organic natural products. Experience authenticity and quality at Alfalah."
+        url="https://alfalah-store.vercel.app/"
+        schema={localBusinessSchema}
+      />
       <div>
         {/* Hero already includes the Navbar internally */}
         <main>

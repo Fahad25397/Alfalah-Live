@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { Star, ShoppingCart, Loader, Search, Eye, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -18,6 +19,7 @@ const ProductGrid = () => {
   const [selectedVariants, setSelectedVariants] = useState({});
   const { addToCart } = useCart();
   const { formatPrice } = useCurrency();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Refs to control horizontal scrolling per category row
   const rowRefs = useRef({});
@@ -26,8 +28,11 @@ const ProductGrid = () => {
     const fetchProducts = async () => {
       try {
         const response = await api.get('/api/products');
-        setProducts(response.data || []);
+        const loadedProducts = response.data || [];
+        setProducts(loadedProducts);
         setLoading(false);
+        
+        // Initial state is set via the effect below this one
       } catch (err) {
         console.error('Failed to fetch products:', err);
         setError('Failed to connect to backend server.');
@@ -37,8 +42,32 @@ const ProductGrid = () => {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    const productIdFromUrl = searchParams.get('product');
+    if (productIdFromUrl) {
+      if (!selectedProduct || selectedProduct._id !== productIdFromUrl) {
+        const p = products.find(x => x._id === productIdFromUrl);
+        if (p) setSelectedProduct(p);
+      }
+    } else {
+      if (selectedProduct) setSelectedProduct(null);
+    }
+  }, [searchParams, products]);
+
   const handleVariantChange = (productId, index) => {
     setSelectedVariants(prev => ({ ...prev, [productId]: index }));
+  };
+
+  const openProductModal = (p) => {
+    setSelectedProduct(p);
+    setSearchParams({ product: p._id }, { replace: true });
+  };
+
+  const closeProductModal = () => {
+    setSelectedProduct(null);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('product');
+    setSearchParams(newParams, { replace: true });
   };
 
   const handleAddToCartWithVariant = (product) => {
@@ -127,8 +156,8 @@ const ProductGrid = () => {
       >
         <div>
           <div className="relative h-60 overflow-hidden bg-amber-50">
-            <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onClick={() => setSelectedProduct(p)} />
-            <button onClick={() => setSelectedProduct(p)} className="absolute inset-x-4 bottom-4 bg-white/90 backdrop-blur-md text-[#3c2415] font-semibold text-xs py-2.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer">
+            <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onClick={() => openProductModal(p)} />
+            <button onClick={() => openProductModal(p)} className="absolute inset-x-4 bottom-4 bg-white/90 backdrop-blur-md text-[#3c2415] font-semibold text-xs py-2.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer">
               <Eye size={14} /> Quick View
             </button>
           </div>
@@ -144,7 +173,7 @@ const ProductGrid = () => {
               </span>
             </div>
 
-            <h3 onClick={() => setSelectedProduct(p)} className="font-serif font-bold text-lg text-[#3c2415] hover:text-amber-700 transition cursor-pointer truncate">
+            <h3 onClick={() => openProductModal(p)} className="font-serif font-bold text-lg text-[#3c2415] hover:text-amber-700 transition cursor-pointer truncate">
               {p.name}
             </h3>
             <p className="text-[#3c2415]/70 text-xs mt-1.5 line-clamp-2 font-light leading-relaxed">
@@ -318,7 +347,7 @@ const ProductGrid = () => {
           </div>
         )}
 
-        <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+        <ProductDetailModal product={selectedProduct} onClose={closeProductModal} />
       </div>
     </section>
   );
