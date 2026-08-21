@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('../config/db');
 
 // Only load .env in local dev - Vercel injects environment variables natively
@@ -9,9 +12,19 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express();
 
-// Increase JSON / urlencoded payload limits
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ limit: '15mb', extended: true }));
+// Security Middlewares
+app.use(helmet());
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api', limiter);
+
+// Increase JSON / urlencoded payload limits (Secured to 10kb)
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ limit: '10kb', extended: true }));
+app.use(cookieParser());
 
 // Standard CORS configuration
 app.use(cors({
@@ -56,6 +69,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/admin', require('../routes/adminRoutes'));
 app.use('/api/products', require('../routes/productRoutes'));
 app.use('/products', require('../routes/productRoutes'));
 app.use('/api/orders', require('../routes/orderRoutes'));
