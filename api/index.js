@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('../config/db');
+const connectDB = require('../backend/config/db');
 
 // Only load .env in local dev - Vercel injects environment variables natively
 if (process.env.NODE_ENV !== 'production') {
@@ -9,7 +9,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express();
 
-// Increase JSON / urlencoded payload limits
+// Increase JSON / urlencoded payload limits to support Base64 images from admin
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ limit: '15mb', extended: true }));
 
@@ -41,29 +41,29 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Health checks
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Alfalah API is running' });
-});
+// Health check endpoints
 app.get('/api', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Alfalah API is running' });
-});
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Health check passed' });
+  res.status(200).json({ status: 'OK', message: 'Alfalah Honey API is running' });
 });
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Health check passed' });
 });
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Health check passed' });
+});
 
-// API Routes
-app.use('/api/products', require('../routes/productRoutes'));
-app.use('/products', require('../routes/productRoutes'));
-app.use('/api/orders', require('../routes/orderRoutes'));
-app.use('/orders', require('../routes/orderRoutes'));
+// Register API Routes (support both /api/* and direct /* prefix for flexible serverless rewrites)
+app.use('/api/products', require('../backend/routes/productRoutes'));
+app.use('/products', require('../backend/routes/productRoutes'));
+app.use('/api/orders', require('../backend/routes/orderRoutes'));
+app.use('/orders', require('../backend/routes/orderRoutes'));
 
+// For local testing outside serverless
 if (process.env.NODE_ENV !== 'production' && require.main === module) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 }
 
 module.exports = app;

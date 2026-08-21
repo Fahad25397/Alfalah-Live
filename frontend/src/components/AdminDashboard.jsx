@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { 
   ShoppingBag, Calendar, User, Phone, MapPin, 
-  CheckCircle, Clock, ArrowLeft, Package, Plus, Trash2, Edit2, X, Settings, Save, Upload, Search 
+  CheckCircle, Clock, ArrowLeft, Package, Plus, Trash2, Edit2, X, Settings, Save, 
+  Upload, Search, Clipboard, Image as ImageIcon, Check, Filter, AlertCircle, RefreshCw
 } from 'lucide-react';
 
 const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dry Fruits'];
@@ -19,9 +20,11 @@ const AdminDashboard = ({ onBackToShop }) => {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState(null); // toast feedback
 
-  // Search filter state for orders
+  // Search and status filter for orders
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('All');
 
   // Manual Currency Exchange Rates State
   const [currencies, setCurrencies] = useState(() => {
@@ -30,8 +33,12 @@ const AdminDashboard = ({ onBackToShop }) => {
   });
   const [successCurrencyMsg, setSuccessCurrencyMsg] = useState(false);
 
+  // Product Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [pasteNotice, setPasteNotice] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const modalRef = useRef(null);
   
   const [productForm, setProductForm] = useState({
     name: '',
@@ -43,6 +50,11 @@ const AdminDashboard = ({ onBackToShop }) => {
       { weight: '1000g', price: '' }
     ]
   });
+
+  const showToast = (text, type = 'success') => {
+    setActionMessage({ text, type });
+    setTimeout(() => setActionMessage(null), 3500);
+  };
 
   const fetchOrders = async () => {
     try {
@@ -85,32 +97,38 @@ const AdminDashboard = ({ onBackToShop }) => {
     e.preventDefault();
     localStorage.setItem('admin_currency_rates', JSON.stringify(currencies));
     setSuccessCurrencyMsg(true);
+    showToast('Currency exchange rates saved globally!');
     setTimeout(() => setSuccessCurrencyMsg(false), 3000);
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/orders/${orderId}/status`, { status: newStatus });
+      showToast(`Order #${orderId.slice(-6).toUpperCase()} status updated to ${newStatus}`);
       fetchOrders();
     } catch (err) {
       alert('Failed to update order status');
     }
   };
 
-  // Delete an order
+  // Delete an order with confirmation
   const handleDeleteOrder = async (orderId) => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
+    const shortId = orderId.slice(-6).toUpperCase();
+    if (window.confirm(`Are you sure you want to permanently delete Order #${shortId}?`)) {
       try {
         await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/orders/${orderId}`);
-        fetchOrders();
+        showToast(`Order #${shortId} was deleted successfully`, 'success');
+        setOrders(prev => prev.filter(o => o._id !== orderId));
       } catch (err) {
-        alert('Failed to delete order');
+        console.error('Delete order error:', err);
+        alert('Failed to delete order. Please try again.');
       }
     }
   };
 
   const handleOpenAddModal = () => {
     setEditingId(null);
+    setPasteNotice('');
     setProductForm({ 
       name: '', 
       category: 'Honey', 
@@ -126,6 +144,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const handleOpenEditModal = (product) => {
     setEditingId(product._id);
+    setPasteNotice('');
     
     const matchedCategory = CATEGORIES.find(
       (cat) => cat.toLowerCase() === (product.category || '').trim().toLowerCase()
@@ -151,48 +170,110 @@ const AdminDashboard = ({ onBackToShop }) => {
     setIsModalOpen(true);
   };
 
-  // Compressed Image Browser Upload (Solves Vercel 413 Payload Error)
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        alert('Please upload a valid image file (PNG, JPG, JPEG)');
-        return;
-      }
+  // Helper function to compress and set image from File / Blob
+  const processAndCompressImage = useCallback((file, sourceLabel = 'Uploaded') => {
+    if (!file || !file.type.startsWith('image/')) {
+      alert('Please provide a valid image (PNG, JPG, WEBP, GIF)');
+      return;
+    }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 500;
-          const MAX_HEIGHT = 500;
-          let width = img.width;
-          let height = img.height;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 600;
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round(height * (MAX_WIDTH / width));
+            width = MAX_WIDTH;
           }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round(width * (MAX_HEIGHT / height));
+            height = MAX_HEIGHT;
+          }
+        }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
-          setProductForm({ ...productForm, image: compressedBase64 });
-        };
-        img.src = event.target.result;
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
+        setProductForm(prev => ({ ...prev, image: compressedBase64 }));
+        setPasteNotice(`✓ Image ${sourceLabel} successfully (${width}x${height}px)`);
+        setTimeout(() => setPasteNotice(''), 4000);
       };
-      reader.readAsDataURL(file);
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // Handle standard file picker
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processAndCompressImage(file, 'uploaded');
+    }
+  };
+
+  // Handle Clipboard Paste Event (Ctrl+V) anywhere when modal is open
+  const handlePasteEvent = useCallback((e) => {
+    if (!isModalOpen) return;
+
+    // Check if clipboard contains image file items (e.g. Right Click -> Copy Image in browser)
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          if (blob) {
+            e.preventDefault();
+            processAndCompressImage(blob, 'pasted from browser/clipboard');
+            return;
+          }
+        }
+      }
+    }
+
+    // Check if plain text clipboard has an image URL
+    const pastedText = e.clipboardData?.getData('text');
+    if (pastedText && pastedText.trim().match(/^https?:\/\/.*\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i)) {
+      setProductForm(prev => ({ ...prev, image: pastedText.trim() }));
+      setPasteNotice('✓ Image URL pasted from clipboard');
+      setTimeout(() => setPasteNotice(''), 4000);
+    }
+  }, [isModalOpen, processAndCompressImage]);
+
+  // Attach global paste listener when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      window.addEventListener('paste', handlePasteEvent);
+      return () => {
+        window.removeEventListener('paste', handlePasteEvent);
+      };
+    }
+  }, [isModalOpen, handlePasteEvent]);
+
+  // Drag & Drop handlers for image box
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processAndCompressImage(file, 'dropped');
     }
   };
 
@@ -214,10 +295,11 @@ const AdminDashboard = ({ onBackToShop }) => {
     setProductForm({ ...productForm, variants: newVariants });
   };
 
-  const handleDeleteProduct = async (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+  const handleDeleteProduct = async (id, name) => {
+    if (window.confirm(`Are you sure you want to delete product "${name || 'item'}"?`)) {
       try {
         await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/products/${id}`);
+        showToast('Product deleted from inventory');
         fetchProducts();
       } catch (err) {
         alert('Failed to delete product');
@@ -228,7 +310,7 @@ const AdminDashboard = ({ onBackToShop }) => {
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     if (!productForm.image) {
-      alert('Please provide or upload a product image!');
+      alert('Please provide, upload, or paste a product image!');
       return;
     }
 
@@ -243,46 +325,79 @@ const AdminDashboard = ({ onBackToShop }) => {
 
       if (editingId) {
         await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/products/${editingId}`, payload);
+        showToast('Product updated successfully!');
       } else {
         await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/products`, payload);
+        showToast('New product added to inventory!');
       }
       setIsModalOpen(false);
       fetchProducts();
     } catch (err) {
-      alert('Failed to save product');
+      alert('Failed to save product. Please check connection and try again.');
     }
   };
 
-  // Filtered orders list by search query (order ID, customer name, or phone)
+  // Filtered orders list by search query (Order ID, short ID, customer name, phone, city, product names)
   const filteredOrders = orders.filter(order => {
-    const query = orderSearchQuery.toLowerCase();
-    const orderIdMatch = order._id.toLowerCase().includes(query) || `#${order._id.slice(-6).toLowerCase()}`.includes(query);
+    const query = orderSearchQuery.trim().toLowerCase();
+    const cleanQuery = query.startsWith('#') ? query.slice(1) : query;
+
+    // Status filter
+    if (orderStatusFilter !== 'All' && order.status !== orderStatusFilter) {
+      return false;
+    }
+
+    if (!query) return true;
+
+    const shortId = order._id.slice(-6).toLowerCase();
+    const fullId = order._id.toLowerCase();
+    const orderIdMatch = fullId.includes(cleanQuery) || shortId.includes(cleanQuery);
+    
     const nameMatch = order.customer?.fullName?.toLowerCase().includes(query);
     const phoneMatch = order.customer?.phone?.toLowerCase().includes(query);
-    return orderIdMatch || nameMatch || phoneMatch;
+    const cityMatch = order.customer?.city?.toLowerCase().includes(query);
+    const addressMatch = order.customer?.address?.toLowerCase().includes(query);
+
+    const itemsMatch = order.items?.some(item => item.name?.toLowerCase().includes(query));
+
+    return orderIdMatch || nameMatch || phoneMatch || cityMatch || addressMatch || itemsMatch;
   });
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] p-6 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#faf8f5] p-4 sm:p-6 max-w-7xl mx-auto">
+      {/* Toast Notification Banner */}
+      {actionMessage && (
+        <div className={`fixed top-5 right-5 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl shadow-xl border text-sm font-semibold transition-all animate-bounce ${
+          actionMessage.type === 'success' 
+            ? 'bg-emerald-800 text-white border-emerald-600' 
+            : 'bg-red-800 text-white border-red-600'
+        }`}>
+          <CheckCircle size={18} />
+          <span>{actionMessage.text}</span>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-amber-200">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-[#3c2415]">Store Owner Management Panel</h1>
-          <p className="text-amber-800 text-sm mt-1">
-            Manage incoming orders, inventory, and manual global currency configurations.
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#3c2415]">Store Owner Management Panel</h1>
+          <p className="text-amber-800 text-xs sm:text-sm mt-1">
+            Manage incoming orders, search by order number, update inventory, and paste pictures directly from browser.
           </p>
         </div>
         <button 
           onClick={onBackToShop}
-          className="flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-[#3c2415] rounded-xl font-bold transition text-sm cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-[#3c2415] rounded-xl font-bold transition text-xs sm:text-sm cursor-pointer shadow-sm"
         >
           <ArrowLeft size={16} /> Back to Store
         </button>
       </div>
 
-      <div className="flex items-center gap-4 mb-8">
+      {/* Navigation Tabs */}
+      <div className="flex flex-wrap items-center gap-3 mb-8">
         <button
           onClick={() => setActiveTab('orders')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
             activeTab === 'orders'
               ? 'bg-[#3c2415] text-amber-100 shadow-md'
               : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-100'
@@ -292,7 +407,7 @@ const AdminDashboard = ({ onBackToShop }) => {
         </button>
         <button
           onClick={() => setActiveTab('products')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
             activeTab === 'products'
               ? 'bg-[#3c2415] text-amber-100 shadow-md'
               : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-100'
@@ -302,7 +417,7 @@ const AdminDashboard = ({ onBackToShop }) => {
         </button>
         <button
           onClick={() => setActiveTab('currencies')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
             activeTab === 'currencies'
               ? 'bg-[#3c2415] text-amber-100 shadow-md'
               : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-100'
@@ -313,50 +428,103 @@ const AdminDashboard = ({ onBackToShop }) => {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-amber-800 font-medium">Loading panel data...</div>
+        <div className="text-center py-20 text-amber-800 font-medium flex items-center justify-center gap-2">
+          <RefreshCw className="animate-spin text-amber-700" size={20} /> Loading panel data...
+        </div>
       ) : activeTab === 'orders' ? (
         <div>
-          {/* SEARCH BAR FOR ORDERS */}
-          <div className="mb-6 flex items-center bg-white border border-amber-200 rounded-2xl px-4 py-3 shadow-sm max-w-md">
-            <Search size={18} className="text-amber-700 mr-3" />
-            <input
-              type="text"
-              placeholder="Search by Order ID (e.g. #A05AEA), Name, Phone..."
-              value={orderSearchQuery}
-              onChange={(e) => setOrderSearchQuery(e.target.value)}
-              className="w-full text-sm focus:outline-none bg-transparent text-[#3c2415]"
-            />
-            {orderSearchQuery && (
-              <button onClick={() => setOrderSearchQuery('')} className="text-gray-400 hover:text-gray-600">
-                <X size={16} />
+          {/* SEARCH & FILTER CONTROLS FOR ORDERS */}
+          <div className="bg-white p-4 rounded-2xl border border-amber-200 shadow-sm mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            {/* Search Input */}
+            <div className="flex-1 flex items-center bg-[#faf8f5] border border-amber-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-amber-500">
+              <Search size={18} className="text-amber-700 mr-2 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search by Order # (e.g. #A05AEA), Name, Phone, City, Product..."
+                value={orderSearchQuery}
+                onChange={(e) => setOrderSearchQuery(e.target.value)}
+                className="w-full text-xs sm:text-sm focus:outline-none bg-transparent text-[#3c2415]"
+              />
+              {orderSearchQuery && (
+                <button 
+                  onClick={() => setOrderSearchQuery('')} 
+                  className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                  title="Clear search"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Status Filter Buttons */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+              <span className="text-xs font-bold text-gray-500 flex items-center gap-1">
+                <Filter size={14} /> Status:
+              </span>
+              {['All', 'Pending', 'Processing', 'Delivered'].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setOrderStatusFilter(status)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    orderStatusFilter === status
+                      ? 'bg-[#3c2415] text-amber-100'
+                      : 'bg-amber-50 text-amber-900 hover:bg-amber-100'
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Results Summary */}
+          <div className="flex items-center justify-between text-xs text-amber-900 font-semibold mb-4 px-1">
+            <span>Showing {filteredOrders.length} of {orders.length} orders</span>
+            {(orderSearchQuery || orderStatusFilter !== 'All') && (
+              <button 
+                onClick={() => { setOrderSearchQuery(''); setOrderStatusFilter('All'); }}
+                className="text-amber-700 underline hover:text-amber-900 cursor-pointer"
+              >
+                Reset filters
               </button>
             )}
           </div>
 
           {filteredOrders.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border border-amber-100 shadow-sm">
-              <ShoppingBag size={48} className="mx-auto text-amber-400 mb-3" />
-              <h3 className="text-xl font-bold text-[#3c2415]">No matching orders found!</h3>
+            <div className="text-center py-16 bg-white rounded-2xl border border-amber-100 shadow-sm">
+              <ShoppingBag size={48} className="mx-auto text-amber-300 mb-3" />
+              <h3 className="text-lg font-bold text-[#3c2415]">No matching orders found</h3>
+              <p className="text-xs text-gray-500 mt-1">Try a different order number, phone, or customer name</p>
             </div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-5">
               {filteredOrders.map((order) => (
-                <div key={order._id} className="bg-white rounded-2xl p-6 border border-amber-100 shadow-md relative">
+                <div key={order._id} className="bg-white rounded-2xl p-5 sm:p-6 border border-amber-100 shadow-md relative hover:border-amber-300 transition">
                   <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-amber-50">
                     <div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
-                        Order ID: #{order._id.slice(-6)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-full">
+                          Order #{order._id.slice(-6).toUpperCase()}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-mono hidden sm:inline">
+                          ID: {order._id}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
-                        <Calendar size={14} />
-                        {new Date(order.createdAt).toLocaleString()}
+                        <Calendar size={14} className="text-amber-700" />
+                        {new Date(order.createdAt).toLocaleString('en-US', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short'
+                        })}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 ${
+                      <span className={`text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${
                         order.status === 'Delivered' 
                           ? 'bg-emerald-100 text-emerald-800' 
+                          : order.status === 'Processing'
+                          ? 'bg-blue-100 text-blue-800'
                           : 'bg-amber-100 text-amber-800'
                       }`}>
                         {order.status === 'Delivered' ? <CheckCircle size={14} /> : <Clock size={14} />}
@@ -366,52 +534,56 @@ const AdminDashboard = ({ onBackToShop }) => {
                       <select 
                         value={order.status}
                         onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                        className="text-xs font-bold bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer"
+                        className="text-xs font-bold bg-[#faf8f5] border border-amber-200 rounded-xl px-3 py-1.5 focus:outline-none cursor-pointer text-[#3c2415]"
                       >
                         <option value="Pending">Mark Pending</option>
                         <option value="Processing">Mark Processing</option>
                         <option value="Delivered">Mark Delivered</option>
                       </select>
 
+                      {/* DELETE ORDER BUTTON */}
                       <button
                         onClick={() => handleDeleteOrder(order._id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
-                        title="Delete Order"
+                        className="p-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition cursor-pointer border border-transparent hover:border-red-200"
+                        title="Delete Order Permanently"
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    <div className="space-y-2 bg-amber-50/50 p-4 rounded-xl text-sm border border-amber-100/60">
-                      <h4 className="font-bold text-[#3c2415] mb-2 flex items-center gap-1.5">
-                        <User size={16} className="text-amber-700" /> Customer Details
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+                    <div className="space-y-2 bg-amber-50/40 p-4 rounded-xl text-xs sm:text-sm border border-amber-100/60">
+                      <h4 className="font-bold text-[#3c2415] mb-2 flex items-center gap-1.5 text-xs uppercase tracking-wider">
+                        <User size={15} className="text-amber-700" /> Customer Information
                       </h4>
-                      <p className="font-semibold text-gray-800">{order.customer.fullName}</p>
+                      <p className="font-semibold text-gray-800">{order.customer?.fullName}</p>
                       <p className="text-gray-600 flex items-center gap-2">
-                        <Phone size={14} className="text-amber-700" /> {order.customer.phone}
+                        <Phone size={14} className="text-amber-700" /> {order.customer?.phone}
                       </p>
                       <p className="text-gray-600 flex items-center gap-2">
-                        <MapPin size={14} className="text-amber-700" /> {order.customer.address}, {order.customer.city}
+                        <MapPin size={14} className="text-amber-700 flex-shrink-0" /> 
+                        <span>{order.customer?.address}, {order.customer?.city}</span>
                       </p>
                     </div>
 
-                    <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100/60">
-                      <h4 className="font-bold text-[#3c2415] mb-2">Ordered Products</h4>
-                      <div className="space-y-1.5">
-                        {order.items.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-sm">
-                            <span className="text-gray-700 font-medium">
-                              {item.quantity}x {item.name} {item.weight ? `(${item.weight})` : ''}
-                            </span>
-                            <span className="font-semibold text-amber-950">Rs. {(item.price * item.quantity).toLocaleString()}</span>
-                          </div>
-                        ))}
+                    <div className="bg-amber-50/40 p-4 rounded-xl border border-amber-100/60 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-bold text-[#3c2415] mb-2 text-xs uppercase tracking-wider">Ordered Products</h4>
+                        <div className="space-y-1.5">
+                          {order.items?.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-xs sm:text-sm">
+                              <span className="text-gray-700 font-medium">
+                                {item.quantity}x {item.name} {item.weight ? `(${item.weight})` : ''}
+                              </span>
+                              <span className="font-semibold text-amber-950">Rs. {(item.price * item.quantity).toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="mt-3 pt-2 border-t border-amber-200 flex justify-between font-bold text-base text-[#3c2415]">
-                        <span>Total Amount:</span>
-                        <span className="text-amber-700">Rs. {order.totalAmount.toLocaleString()}</span>
+                      <div className="mt-3 pt-2 border-t border-amber-200 flex justify-between font-bold text-sm sm:text-base text-[#3c2415]">
+                        <span>Total Due (COD):</span>
+                        <span className="text-amber-700">Rs. {Number(order.totalAmount || 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -421,9 +593,9 @@ const AdminDashboard = ({ onBackToShop }) => {
           )}
         </div>
       ) : activeTab === 'currencies' ? (
-        <div className="bg-white p-8 rounded-3xl border border-amber-200 shadow-sm max-w-2xl mx-auto">
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-amber-200 shadow-sm max-w-2xl mx-auto">
           <div className="mb-6">
-            <h3 className="text-2xl font-serif font-bold text-[#3c2415]">Manual Global Currency Settings</h3>
+            <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#3c2415]">Manual Global Currency Settings</h3>
             <p className="text-xs text-amber-900/70 mt-1">
               Define exact fixed conversion values relative to PKR (Base: ₨1). Once saved here, all product cards and prices update automatically across the storefront.
             </p>
@@ -466,25 +638,26 @@ const AdminDashboard = ({ onBackToShop }) => {
           </form>
         </div>
       ) : (
+        /* PRODUCT INVENTORY TAB */
         <div>
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-[#3c2415]">All Store Products</h3>
             <button
               onClick={handleOpenAddModal}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm transition cursor-pointer shadow-md"
+              className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs sm:text-sm transition cursor-pointer shadow-md"
             >
-              <Plus size={18} /> Add New Product
+              <Plus size={18} /> Add New Item
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((p) => (
-              <div key={p._id} className="bg-white rounded-2xl p-4 border border-amber-100 shadow-md flex gap-4">
-                <img src={p.image} alt={p.name} className="w-24 h-24 object-cover rounded-xl border" />
+              <div key={p._id} className="bg-white rounded-2xl p-4 border border-amber-100 shadow-md flex gap-4 hover:border-amber-300 transition">
+                <img src={p.image} alt={p.name} className="w-24 h-24 object-cover rounded-xl border border-amber-100 flex-shrink-0 bg-amber-50" />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-bold text-[#3c2415]">{p.name}</h4>
-                    <span className="inline-block text-xs text-amber-900 font-bold bg-amber-100 px-2 py-0.5 rounded mt-1">
+                    <h4 className="font-bold text-[#3c2415] line-clamp-1">{p.name}</h4>
+                    <span className="inline-block text-[11px] text-amber-900 font-bold bg-amber-100 px-2 py-0.5 rounded mt-1">
                       {p.category || 'Honey'}
                     </span>
                     
@@ -509,12 +682,14 @@ const AdminDashboard = ({ onBackToShop }) => {
                     <button
                       onClick={() => handleOpenEditModal(p)}
                       className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer"
+                      title="Edit Product"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
-                      onClick={() => handleDeleteProduct(p._id)}
+                      onClick={() => handleDeleteProduct(p._id, p.name)}
                       className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                      title="Delete Product"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -526,10 +701,13 @@ const AdminDashboard = ({ onBackToShop }) => {
         </div>
       )}
 
-      {/* ADD/EDIT MODAL */}
+      {/* ADD/EDIT INVENTORY MODAL WITH BROWSER IMAGE PASTE SUPPORT */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative border border-amber-900/20 max-h-[90vh] overflow-y-auto">
+          <div 
+            ref={modalRef}
+            className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative border border-amber-900/20 max-h-[90vh] overflow-y-auto"
+          >
             <button 
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition cursor-pointer"
@@ -537,9 +715,12 @@ const AdminDashboard = ({ onBackToShop }) => {
               <X size={20} />
             </button>
 
-            <h3 className="text-2xl font-serif font-bold text-[#3c2415] mb-4">
-              {editingId ? 'Edit Product' : 'Add New Product'}
+            <h3 className="text-2xl font-serif font-bold text-[#3c2415] mb-2">
+              {editingId ? 'Edit Product Item' : 'Add Item to Inventory'}
             </h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Tip: You can press <kbd className="px-1.5 py-0.5 bg-amber-100 border border-amber-200 rounded text-[11px] font-mono text-amber-900">Ctrl+V</kbd> anywhere on this modal to paste an image copied from browser or clipboard!
+            </p>
 
             <form onSubmit={handleSaveProduct} className="space-y-4">
               <div>
@@ -567,55 +748,99 @@ const AdminDashboard = ({ onBackToShop }) => {
                 </select>
               </div>
 
-              {/* IMAGE UPLOAD / URL SECTION */}
+              {/* IMAGE SECTION WITH BROWSER PASTE & DROPZONE */}
               <div>
-                <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Product Image</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-[#3c2415] uppercase">
+                    Product Picture (Paste from Browser / Upload)
+                  </label>
+                  {pasteNotice && (
+                    <span className="text-[11px] font-bold text-emerald-700 animate-pulse">
+                      {pasteNotice}
+                    </span>
+                  )}
+                </div>
                 
                 <div className="space-y-3">
-                  <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-amber-300 rounded-xl cursor-pointer bg-[#faf8f5] hover:bg-amber-50/50 transition">
-                    <div className="flex flex-col items-center justify-center pt-3 pb-3">
-                      <Upload size={22} className="text-[#3c2415]/60 mb-1" />
-                      <p className="text-xs text-[#3c2415]/80 font-medium">Click to browse image from computer</p>
-                      <p className="text-[10px] text-gray-400">PNG, JPG, WEBP</p>
-                    </div>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageUpload} 
-                      className="hidden" 
-                    />
-                  </label>
+                  {/* Interactive Drop & Paste Zone */}
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`flex flex-col items-center justify-center w-full p-4 border-2 border-dashed rounded-xl transition ${
+                      isDragging 
+                        ? 'border-amber-600 bg-amber-100/60 scale-[1.01]' 
+                        : 'border-amber-300 bg-[#faf8f5] hover:bg-amber-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 text-center">
+                      <label className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs font-bold text-[#3c2415] hover:bg-amber-50 shadow-sm">
+                        <Upload size={14} className="text-amber-700" /> Browse File
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleImageUpload} 
+                          className="hidden" 
+                        />
+                      </label>
 
+                      <div className="flex items-center gap-1 text-xs text-amber-900 font-semibold bg-amber-100/70 px-3 py-1.5 rounded-lg border border-amber-200">
+                        <Clipboard size={14} className="text-amber-800" />
+                        <span>Press <kbd className="font-mono bg-white px-1 py-0.5 rounded border text-[10px]">Ctrl+V</kbd> to Paste</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-gray-400 mt-2">
+                      Supports: Right-click image on website &rarr; "Copy Image" &rarr; Paste here, or drag & drop.
+                    </p>
+                  </div>
+
+                  {/* Or direct URL Input */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-gray-500 font-medium">Or URL:</span>
+                    <span className="text-[11px] text-gray-500 font-medium">Or Paste URL:</span>
                     <input 
                       type="text" 
                       value={productForm.image.startsWith('data:') ? '' : productForm.image}
                       onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
-                      placeholder="https://images.unsplash.com/..."
+                      placeholder="https://images.unsplash.com/photo-..."
                       className="flex-1 px-3 py-1.5 rounded-xl border border-amber-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
 
+                  {/* Image Preview Box */}
                   {productForm.image && (
-                    <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-amber-200">
-                      <img 
-                        src={productForm.image} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover" 
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setProductForm({ ...productForm, image: '' })}
-                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
-                      >
-                        <X size={12} />
-                      </button>
+                    <div className="flex items-center gap-4 p-3 bg-amber-50/60 rounded-xl border border-amber-200">
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-amber-300 bg-white flex-shrink-0">
+                        <img 
+                          src={productForm.image} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+
+                      <div className="flex-1 text-xs">
+                        <p className="font-bold text-[#3c2415] flex items-center gap-1">
+                          <Check size={14} className="text-emerald-600" /> Picture Attached Ready
+                        </p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">
+                          {productForm.image.startsWith('data:') 
+                            ? 'Optimized Base64 image' 
+                            : 'Remote image URL'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setProductForm({ ...productForm, image: '' })}
+                          className="mt-2 text-xs font-bold text-red-600 hover:text-red-800 flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 size={12} /> Remove Picture
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
 
+              {/* WEIGHTS & PRICES VARIANTS */}
               <div className="border-t border-amber-200 pt-4">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-[#3c2415] uppercase">Weights & Prices Options (PKR)</label>
@@ -653,6 +878,7 @@ const AdminDashboard = ({ onBackToShop }) => {
                           type="button" 
                           onClick={() => removeVariantField(index)} 
                           className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                          title="Remove variant"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -662,6 +888,7 @@ const AdminDashboard = ({ onBackToShop }) => {
                 </div>
               </div>
 
+              {/* DESCRIPTION */}
               <div>
                 <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Description</label>
                 <textarea 
