@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, Loader } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext'; // <-- Added currency hook
 
@@ -38,13 +38,14 @@ const CheckoutModal = ({ isOpen, onClose }) => {
         totalAmount: totalPrice,
       };
 
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/orders`, orderData);
+      await api.post('/api/orders', orderData);
       
       setLoading(false);
       setSuccess(true);
       clearCart();
     } catch (err) {
       setLoading(false);
+      console.error('Order creation error:', err);
       alert('Failed to place order. Please try again.');
     }
   };

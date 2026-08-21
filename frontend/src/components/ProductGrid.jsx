@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Star, ShoppingCart, Loader, Search, Eye, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -25,10 +25,11 @@ const ProductGrid = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/products`);
+        const response = await api.get('/api/products');
         setProducts(response.data || []);
         setLoading(false);
       } catch (err) {
+        console.error('Failed to fetch products:', err);
         setError('Failed to connect to backend server.');
         setLoading(false);
       }

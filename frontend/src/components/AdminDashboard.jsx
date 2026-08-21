@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { 
   ShoppingBag, Calendar, User, Phone, MapPin, 
   CheckCircle, Clock, ArrowLeft, Package, Plus, Trash2, Edit2, X, Settings, Save, 
@@ -58,7 +58,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/orders`);
+      const response = await api.get('/api/orders');
       setOrders(response.data);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -67,7 +67,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/products`);
+      const response = await api.get('/api/products');
       setProducts(response.data);
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -103,7 +103,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/orders/${orderId}/status`, { status: newStatus });
+      await api.put(`/api/orders/${orderId}/status`, { status: newStatus });
       showToast(`Order #${orderId.slice(-6).toUpperCase()} status updated to ${newStatus}`);
       fetchOrders();
     } catch (err) {
@@ -116,7 +116,7 @@ const AdminDashboard = ({ onBackToShop }) => {
     const shortId = orderId.slice(-6).toUpperCase();
     if (window.confirm(`Are you sure you want to permanently delete Order #${shortId}?`)) {
       try {
-        await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/orders/${orderId}`);
+        await api.delete(`/api/orders/${orderId}`);
         showToast(`Order #${shortId} was deleted successfully`, 'success');
         setOrders(prev => prev.filter(o => o._id !== orderId));
       } catch (err) {
@@ -298,10 +298,11 @@ const AdminDashboard = ({ onBackToShop }) => {
   const handleDeleteProduct = async (id, name) => {
     if (window.confirm(`Are you sure you want to delete product "${name || 'item'}"?`)) {
       try {
-        await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/products/${id}`);
+        await api.delete(`/api/products/${id}`);
         showToast('Product deleted from inventory');
         fetchProducts();
       } catch (err) {
+        console.error('Delete product error:', err);
         alert('Failed to delete product');
       }
     }
@@ -324,15 +325,16 @@ const AdminDashboard = ({ onBackToShop }) => {
       };
 
       if (editingId) {
-        await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/products/${editingId}`, payload);
+        await api.put(`/api/products/${editingId}`, payload);
         showToast('Product updated successfully!');
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/products`, payload);
+        await api.post('/api/products', payload);
         showToast('New product added to inventory!');
       }
       setIsModalOpen(false);
       fetchProducts();
     } catch (err) {
+      console.error('Save product error:', err);
       alert('Failed to save product. Please check connection and try again.');
     }
   };
