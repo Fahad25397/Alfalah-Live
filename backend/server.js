@@ -63,6 +63,7 @@ app.use(cookieParser());
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api', require('./routes/seoRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
