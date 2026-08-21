@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   ShoppingBag, Calendar, User, Phone, MapPin, 
-  CheckCircle, Clock, ArrowLeft, Package, Plus, Trash2, Edit2, X, Settings, Save 
+  CheckCircle, Clock, ArrowLeft, Package, Plus, Trash2, Edit2, X, Settings, Save, Upload, Search 
 } from 'lucide-react';
 
 const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dry Fruits'];
@@ -20,7 +20,10 @@ const AdminDashboard = ({ onBackToShop }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Manual Currency Exchange Rates State (Loaded from localStorage or defaults)
+  // Search filter state for orders
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
+
+  // Manual Currency Exchange Rates State
   const [currencies, setCurrencies] = useState(() => {
     const saved = localStorage.getItem('admin_currency_rates');
     return saved ? JSON.parse(saved) : DEFAULT_CURRENCIES;
@@ -94,6 +97,18 @@ const AdminDashboard = ({ onBackToShop }) => {
     }
   };
 
+  // Delete an order
+  const handleDeleteOrder = async (orderId) => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      try {
+        await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/orders/${orderId}`);
+        fetchOrders();
+      } catch (err) {
+        alert('Failed to delete order');
+      }
+    }
+  };
+
   const handleOpenAddModal = () => {
     setEditingId(null);
     setProductForm({ 
@@ -136,6 +151,51 @@ const AdminDashboard = ({ onBackToShop }) => {
     setIsModalOpen(true);
   };
 
+  // Compressed Image Browser Upload (Solves Vercel 413 Payload Error)
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file (PNG, JPG, JPEG)');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 500;
+          const MAX_HEIGHT = 500;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+          setProductForm({ ...productForm, image: compressedBase64 });
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleVariantChange = (index, field, value) => {
     const newVariants = [...productForm.variants];
     newVariants[index][field] = value;
@@ -167,6 +227,11 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
+    if (!productForm.image) {
+      alert('Please provide or upload a product image!');
+      return;
+    }
+
     try {
       const payload = {
         ...productForm,
@@ -187,6 +252,15 @@ const AdminDashboard = ({ onBackToShop }) => {
       alert('Failed to save product');
     }
   };
+
+  // Filtered orders list by search query (order ID, customer name, or phone)
+  const filteredOrders = orders.filter(order => {
+    const query = orderSearchQuery.toLowerCase();
+    const orderIdMatch = order._id.toLowerCase().includes(query) || `#${order._id.slice(-6).toLowerCase()}`.includes(query);
+    const nameMatch = order.customer?.fullName?.toLowerCase().includes(query);
+    const phoneMatch = order.customer?.phone?.toLowerCase().includes(query);
+    return orderIdMatch || nameMatch || phoneMatch;
+  });
 
   return (
     <div className="min-h-screen bg-[#faf8f5] p-6 max-w-7xl mx-auto">
@@ -241,84 +315,111 @@ const AdminDashboard = ({ onBackToShop }) => {
       {loading ? (
         <div className="text-center py-20 text-amber-800 font-medium">Loading panel data...</div>
       ) : activeTab === 'orders' ? (
-        orders.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-amber-100 shadow-sm">
-            <ShoppingBag size={48} className="mx-auto text-amber-400 mb-3" />
-            <h3 className="text-xl font-bold text-[#3c2415]">No orders placed yet!</h3>
+        <div>
+          {/* SEARCH BAR FOR ORDERS */}
+          <div className="mb-6 flex items-center bg-white border border-amber-200 rounded-2xl px-4 py-3 shadow-sm max-w-md">
+            <Search size={18} className="text-amber-700 mr-3" />
+            <input
+              type="text"
+              placeholder="Search by Order ID (e.g. #A05AEA), Name, Phone..."
+              value={orderSearchQuery}
+              onChange={(e) => setOrderSearchQuery(e.target.value)}
+              className="w-full text-sm focus:outline-none bg-transparent text-[#3c2415]"
+            />
+            {orderSearchQuery && (
+              <button onClick={() => setOrderSearchQuery('')} className="text-gray-400 hover:text-gray-600">
+                <X size={16} />
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="grid gap-6">
-            {orders.map((order) => (
-              <div key={order._id} className="bg-white rounded-2xl p-6 border border-amber-100 shadow-md">
-                <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-amber-50">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
-                      Order ID: #{order._id.slice(-6)}
-                    </span>
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
-                      <Calendar size={14} />
-                      {new Date(order.createdAt).toLocaleString()}
+
+          {filteredOrders.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-2xl border border-amber-100 shadow-sm">
+              <ShoppingBag size={48} className="mx-auto text-amber-400 mb-3" />
+              <h3 className="text-xl font-bold text-[#3c2415]">No matching orders found!</h3>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {filteredOrders.map((order) => (
+                <div key={order._id} className="bg-white rounded-2xl p-6 border border-amber-100 shadow-md relative">
+                  <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-amber-50">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                        Order ID: #{order._id.slice(-6)}
+                      </span>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+                        <Calendar size={14} />
+                        {new Date(order.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 ${
+                        order.status === 'Delivered' 
+                          ? 'bg-emerald-100 text-emerald-800' 
+                          : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {order.status === 'Delivered' ? <CheckCircle size={14} /> : <Clock size={14} />}
+                        {order.status}
+                      </span>
+
+                      <select 
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                        className="text-xs font-bold bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer"
+                      >
+                        <option value="Pending">Mark Pending</option>
+                        <option value="Processing">Mark Processing</option>
+                        <option value="Delivered">Mark Delivered</option>
+                      </select>
+
+                      <button
+                        onClick={() => handleDeleteOrder(order._id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                        title="Delete Order"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 ${
-                      order.status === 'Delivered' 
-                        ? 'bg-emerald-100 text-emerald-800' 
-                        : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {order.status === 'Delivered' ? <CheckCircle size={14} /> : <Clock size={14} />}
-                      {order.status}
-                    </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div className="space-y-2 bg-amber-50/50 p-4 rounded-xl text-sm border border-amber-100/60">
+                      <h4 className="font-bold text-[#3c2415] mb-2 flex items-center gap-1.5">
+                        <User size={16} className="text-amber-700" /> Customer Details
+                      </h4>
+                      <p className="font-semibold text-gray-800">{order.customer.fullName}</p>
+                      <p className="text-gray-600 flex items-center gap-2">
+                        <Phone size={14} className="text-amber-700" /> {order.customer.phone}
+                      </p>
+                      <p className="text-gray-600 flex items-center gap-2">
+                        <MapPin size={14} className="text-amber-700" /> {order.customer.address}, {order.customer.city}
+                      </p>
+                    </div>
 
-                    <select 
-                      value={order.status}
-                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                      className="text-xs font-bold bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer"
-                    >
-                      <option value="Pending">Mark Pending</option>
-                      <option value="Processing">Mark Processing</option>
-                      <option value="Delivered">Mark Delivered</option>
-                    </select>
+                    <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100/60">
+                      <h4 className="font-bold text-[#3c2415] mb-2">Ordered Products</h4>
+                      <div className="space-y-1.5">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <span className="text-gray-700 font-medium">
+                              {item.quantity}x {item.name} {item.weight ? `(${item.weight})` : ''}
+                            </span>
+                            <span className="font-semibold text-amber-950">Rs. {(item.price * item.quantity).toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-amber-200 flex justify-between font-bold text-base text-[#3c2415]">
+                        <span>Total Amount:</span>
+                        <span className="text-amber-700">Rs. {order.totalAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <div className="space-y-2 bg-amber-50/50 p-4 rounded-xl text-sm border border-amber-100/60">
-                    <h4 className="font-bold text-[#3c2415] mb-2 flex items-center gap-1.5">
-                      <User size={16} className="text-amber-700" /> Customer Details
-                    </h4>
-                    <p className="font-semibold text-gray-800">{order.customer.fullName}</p>
-                    <p className="text-gray-600 flex items-center gap-2">
-                      <Phone size={14} className="text-amber-700" /> {order.customer.phone}
-                    </p>
-                    <p className="text-gray-600 flex items-center gap-2">
-                      <MapPin size={14} className="text-amber-700" /> {order.customer.address}, {order.customer.city}
-                    </p>
-                  </div>
-
-                  <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100/60">
-                    <h4 className="font-bold text-[#3c2415] mb-2">Ordered Products</h4>
-                    <div className="space-y-1.5">
-                      {order.items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between text-sm">
-                          <span className="text-gray-700 font-medium">
-                            {item.quantity}x {item.name} {item.weight ? `(${item.weight})` : ''}
-                          </span>
-                          <span className="font-semibold text-amber-950">Rs. {(item.price * item.quantity).toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 pt-2 border-t border-amber-200 flex justify-between font-bold text-base text-[#3c2415]">
-                      <span>Total Amount:</span>
-                      <span className="text-amber-700">Rs. {order.totalAmount.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )
+              ))}
+            </div>
+          )}
+        </div>
       ) : activeTab === 'currencies' ? (
         <div className="bg-white p-8 rounded-3xl border border-amber-200 shadow-sm max-w-2xl mx-auto">
           <div className="mb-6">
@@ -466,6 +567,55 @@ const AdminDashboard = ({ onBackToShop }) => {
                 </select>
               </div>
 
+              {/* IMAGE UPLOAD / URL SECTION */}
+              <div>
+                <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Product Image</label>
+                
+                <div className="space-y-3">
+                  <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-amber-300 rounded-xl cursor-pointer bg-[#faf8f5] hover:bg-amber-50/50 transition">
+                    <div className="flex flex-col items-center justify-center pt-3 pb-3">
+                      <Upload size={22} className="text-[#3c2415]/60 mb-1" />
+                      <p className="text-xs text-[#3c2415]/80 font-medium">Click to browse image from computer</p>
+                      <p className="text-[10px] text-gray-400">PNG, JPG, WEBP</p>
+                    </div>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageUpload} 
+                      className="hidden" 
+                    />
+                  </label>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-gray-500 font-medium">Or URL:</span>
+                    <input 
+                      type="text" 
+                      value={productForm.image.startsWith('data:') ? '' : productForm.image}
+                      onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
+                      placeholder="https://images.unsplash.com/..."
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-amber-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  {productForm.image && (
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-amber-200">
+                      <img 
+                        src={productForm.image} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setProductForm({ ...productForm, image: '' })}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="border-t border-amber-200 pt-4">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-[#3c2415] uppercase">Weights & Prices Options (PKR)</label>
@@ -510,18 +660,6 @@ const AdminDashboard = ({ onBackToShop }) => {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Image URL</label>
-                <input 
-                  type="url" 
-                  required
-                  value={productForm.image}
-                  onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-4 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
               </div>
 
               <div>

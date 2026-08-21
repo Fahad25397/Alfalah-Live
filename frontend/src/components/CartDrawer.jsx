@@ -21,7 +21,8 @@ const CartDrawer = () => {
         />
 
         <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-          <div className="w-screen max-w-md bg-[#f5eaba] shadow-2xl flex flex-col justify-between border-l border-amber-900/20">
+          {/* Main Container changed from bg-[#f5eaba] to bg-white */}
+          <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between border-l border-amber-900/20">
             
             {/* Header - Matching Navbar Box Style and Color */}
             <div className="bg-[#3c2415] backdrop-blur-md px-6 py-4 rounded-3xl border border-[#3c2415]/80 shadow-md m-4 flex items-center justify-between">
@@ -49,12 +50,12 @@ const CartDrawer = () => {
                 cart.map((item) => (
                   <div 
                     key={item.uniqueCartId || item._id} 
-                    className="flex items-center gap-4 p-4 bg-white/90 backdrop-blur-sm rounded-2xl border border-amber-200/60 shadow-sm"
+                    className="flex items-center gap-4 p-4 bg-[#f5eaba] backdrop-blur-sm rounded-2xl border border-amber-200/60 shadow-sm"
                   >
                     <img 
                       src={item.image} 
                       alt={item.name} 
-                      className="w-16 h-16 object-cover rounded-xl border border-amber-200/60" 
+                      className="w-16 h-16 object-cover rounded-xl border border-amber-200/60 bg-white" 
                     />
                     <div className="flex-1">
                       <h4 className="font-serif font-bold text-[#3c2415] text-sm">{item.name}</h4>
@@ -65,14 +66,14 @@ const CartDrawer = () => {
                       <div className="flex items-center gap-2 mt-2">
                         <button 
                           onClick={() => updateQuantity(item.uniqueCartId || item._id, -1)}
-                          className="p-1 rounded-lg bg-[#f5eaba] hover:bg-amber-200 text-[#3c2415] transition cursor-pointer"
+                          className="p-1 rounded-lg bg-white/80 hover:bg-white text-[#3c2415] transition cursor-pointer border border-amber-200/60"
                         >
                           <Minus size={14} />
                         </button>
                         <span className="text-xs font-bold w-6 text-center text-[#3c2415]">{item.quantity}</span>
                         <button 
                           onClick={() => updateQuantity(item.uniqueCartId || item._id, 1)}
-                          className="p-1 rounded-lg bg-[#f5eaba] hover:bg-amber-200 text-[#3c2415] transition cursor-pointer"
+                          className="p-1 rounded-lg bg-white/80 hover:bg-white text-[#3c2415] transition cursor-pointer border border-amber-200/60"
                         >
                           <Plus size={14} />
                         </button>
@@ -90,9 +91,9 @@ const CartDrawer = () => {
               )}
             </div>
 
-            {/* Footer Checkout Summary */}
+            {/* Footer Checkout Summary with Creamy Box Background */}
             {cart.length > 0 && (
-              <div className="p-6 bg-[#f5eaba] border-t border-amber-200/40 space-y-4">
+              <div className="p-6 bg-[#f5eaba] border-t border-amber-200/40 space-y-4 m-4 rounded-3xl shadow-sm">
                 <div className="flex justify-between items-center text-lg font-bold text-[#3c2415]">
                   <span>Total:</span>
                   <span dir="ltr" className="text-[#3c2415]">{formatPrice(totalPrice)}</span>
@@ -101,7 +102,7 @@ const CartDrawer = () => {
                   onClick={() => setIsCheckoutOpen(true)}
                   className="w-full py-3.5 bg-[#3c2415] hover:bg-[#2b1c12] text-[#f4ecd8] font-bold rounded-2xl shadow-md hover:shadow-lg transition text-center cursor-pointer"
                 >
-                  Checkout as Guest
+                  Checkout
                 </button>
               </div>
             )}
