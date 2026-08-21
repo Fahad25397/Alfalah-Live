@@ -6,7 +6,7 @@ import {
   Upload, Search, Clipboard, Image as ImageIcon, Check, Filter, AlertCircle, RefreshCw
 } from 'lucide-react';
 
-const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dry Fruits', 'For Men'];
+const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Desi Ghee'];
 
 const DEFAULT_CURRENCIES = {
   PKR: { label: 'PKR (₨)', symbol: '₨ ', rate: 1 },
@@ -218,7 +218,12 @@ const AdminDashboard = ({ onBackToShop }) => {
     setPasteNotice('');
     
     const matchedCategory = CATEGORIES.find(
-      (cat) => cat.toLowerCase() === (product.category || '').trim().toLowerCase()
+      (cat) => {
+        const pCat = (product.category || '').trim().toLowerCase();
+        if (pCat === 'olives' && cat === 'Olive Oil') return true;
+        if (pCat === 'dryfruits' && cat === 'Dry Fruits') return true;
+        return cat.toLowerCase() === pCat;
+      }
     ) || 'Honey';
 
     let formattedVariants = product.variants && product.variants.length > 0 

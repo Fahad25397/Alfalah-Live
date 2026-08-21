@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import ProductDetailModal from './ProductDetailModal';
 
-const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dryfruits', 'For Men'];
+const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Desi Ghee'];
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
@@ -63,10 +63,10 @@ const ProductGrid = () => {
     if (tCat === 'desi ghee' && (pCat.includes('ghee') || pCat.includes('desi'))) return true;
     if (tCat === 'zamzam water' && (pCat.includes('zamzam') || pCat.includes('water'))) return true;
     if (tCat === 'jam' && pCat.includes('jam')) return true;
-    if (tCat === 'olives' && pCat.includes('olive')) return true;
+    if (tCat === 'olive oil' && pCat.includes('olive')) return true;
     if (tCat === 'dates' && pCat.includes('date')) return true;
     if (tCat === 'honey' && pCat.includes('honey')) return true;
-    if (tCat === 'dryfruits' && (pCat.includes('dry') || pCat.includes('fruit') || pCat.includes('pistachio') || pCat.includes('almond') || pCat.includes('cashew'))) return true;
+    if (tCat === 'dry fruits' && (pCat.includes('dry') || pCat.includes('fruit') || pCat.includes('pistachio') || pCat.includes('almond') || pCat.includes('cashew'))) return true;
     if (tCat === 'for men' && (pCat.includes('for men') || pCat.includes('men'))) return true;
 
     return pCat === tCat;
