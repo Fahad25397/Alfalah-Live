@@ -1,22 +1,67 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const { protectAdmin } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
-// GET /api/products - Get all products
+// GET /api/products - Get all products with pagination
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 0; // 0 means no limit for backwards compatibility during transition
+
+    const skip = (page - 1) * limit;
+
+    let query = Product.find().sort({ createdAt: -1 });
+    
+    if (limit > 0) {
+      query = query.skip(skip).limit(limit);
+    }
+
+    const products = await query;
+    const total = await Product.countDocuments();
+
+    if (limit > 0) {
+      res.json({
+        data: products,
+        pagination: {
+          total,
+          page,
+          pages: Math.ceil(total / limit)
+        }
+      });
+    } else {
+      // Legacy format for unupdated frontends
+      res.json(products);
+    }
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// POST /api/products - Add a new product
-router.post('/', async (req, res) => {
+// POST /api/products - Add a new product (Protected)
+router.post('/', protectAdmin, upload.single('imageFile'), async (req, res) => {
   try {
-    const { name, category, description, image, variants } = req.body;
-    const newProduct = new Product({ name, category, description, image, variants });
+    const { name, category, description, image } = req.body;
+    let variants = req.body.variants;
+
+    // Parse variants if they come in as a JSON string (from FormData)
+    if (typeof variants === 'string') {
+      try {
+        variants = JSON.parse(variants);
+      } catch (e) {
+        variants = [];
+      }
+    }
+
+    // Use Cloudinary URL if a file was uploaded, otherwise fallback to the image body field
+    const imageUrl = req.file ? req.file.path : image;
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: 'Image is required' });
+    }
+
+    const newProduct = new Product({ name, category, description, image: imageUrl, variants });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
@@ -24,14 +69,26 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/products/:id - Edit an existing product
-router.put('/:id', async (req, res) => {
+// PUT /api/products/:id - Edit an existing product (Protected)
+router.put('/:id', protectAdmin, upload.single('imageFile'), async (req, res) => {
   try {
-    // Note: req.body passes all fields automatically to findByIdAndUpdate, 
-    // but destructuring or ensuring category is explicitly handled is safe practice too.
+    const updateData = { ...req.body };
+    
+    if (typeof updateData.variants === 'string') {
+      try {
+        updateData.variants = JSON.parse(updateData.variants);
+      } catch (e) {
+        delete updateData.variants;
+      }
+    }
+
+    if (req.file) {
+      updateData.image = req.file.path;
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
     res.json(updatedProduct);
@@ -40,8 +97,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/products/:id - Delete a product
-router.delete('/:id', async (req, res) => {
+// DELETE /api/products/:id - Delete a product (Protected)
+router.delete('/:id', protectAdmin, async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ message: 'Product deleted successfully' });

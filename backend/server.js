@@ -1,11 +1,23 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 
 dotenv.config();
 
 const app = express();
+
+// Security Middlewares
+app.use(helmet());
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api', limiter);
 
 // Health check endpoint (placed first so it responds immediately)
 app.get('/', (req, res) => {
@@ -44,11 +56,23 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 
 // Routes
+app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(err.statusCode || 500).json({
+    status: 'error',
+    message: isProd ? 'Internal Server Error' : err.message,
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 

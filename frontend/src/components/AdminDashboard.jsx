@@ -6,7 +6,7 @@ import {
   Upload, Search, Clipboard, Image as ImageIcon, Check, Filter, AlertCircle, RefreshCw
 } from 'lucide-react';
 
-const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dry Fruits'];
+const CATEGORIES = ['Honey', 'Dates', 'Desi Ghee', 'Jam', 'Olives', 'Zamzam Water', 'Dry Fruits', 'For Men'];
 
 const DEFAULT_CURRENCIES = {
   PKR: { label: 'PKR (₨)', symbol: '₨ ', rate: 1 },
@@ -16,11 +16,23 @@ const DEFAULT_CURRENCIES = {
 };
 
 const AdminDashboard = ({ onBackToShop }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
   const [activeTab, setActiveTab] = useState('orders');
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false); // for mutations
   const [actionMessage, setActionMessage] = useState(null); // toast feedback
+
+  // Pagination States
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersTotalPages, setOrdersTotalPages] = useState(1);
+  const [productsPage, setProductsPage] = useState(1);
+  const [productsTotalPages, setProductsTotalPages] = useState(1);
 
   // Search and status filter for orders
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
@@ -56,32 +68,84 @@ const AdminDashboard = ({ onBackToShop }) => {
     setTimeout(() => setActionMessage(null), 3500);
   };
 
-  const fetchOrders = async () => {
+  const checkAuth = async () => {
     try {
-      const response = await api.get('/api/orders');
-      setOrders(response.data);
+      await api.get('/api/admin/me');
+      setIsAuthenticated(true);
+    } catch (err) {
+      setIsAuthenticated(false);
+    } finally {
+      setAuthChecking(false);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    try {
+      await api.post('/api/admin/login', { password: loginPassword });
+      setIsAuthenticated(true);
+      showToast('Login successful!');
+    } catch (err) {
+      alert('Invalid password');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.post('/api/admin/logout');
+      setIsAuthenticated(false);
+      setOrders([]);
+      setProducts([]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchOrders = async (page = 1) => {
+    try {
+      const response = await api.get(`/api/orders?page=${page}&limit=10`);
+      if (response.data.data) {
+        setOrders(response.data.data);
+        setOrdersTotalPages(response.data.pagination.pages);
+      } else {
+        setOrders(response.data); // fallback
+      }
     } catch (err) {
       console.error('Error fetching orders:', err);
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page = 1) => {
     try {
-      const response = await api.get('/api/products');
-      setProducts(response.data);
+      const response = await api.get(`/api/products?page=${page}&limit=12`);
+      if (response.data.data) {
+        setProducts(response.data.data);
+        setProductsTotalPages(response.data.pagination.pages);
+      } else {
+        setProducts(response.data); // fallback
+      }
     } catch (err) {
       console.error('Error fetching products:', err);
     }
   };
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchOrders(), fetchProducts()]);
-      setLoading(false);
-    };
-    loadData();
+    checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const loadData = async () => {
+        setLoading(true);
+        await Promise.all([fetchOrders(ordersPage), fetchProducts(productsPage)]);
+        setLoading(false);
+      };
+      loadData();
+    }
+  }, [isAuthenticated, ordersPage, productsPage]);
 
   const handleCurrencyRateChange = (code, value) => {
     setCurrencies(prev => ({
@@ -102,26 +166,32 @@ const AdminDashboard = ({ onBackToShop }) => {
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
+    setActionLoading(true);
     try {
       await api.put(`/api/orders/${orderId}/status`, { status: newStatus });
       showToast(`Order #${orderId.slice(-6).toUpperCase()} status updated to ${newStatus}`);
-      fetchOrders();
+      fetchOrders(ordersPage);
     } catch (err) {
       alert('Failed to update order status');
+    } finally {
+      setActionLoading(false);
     }
   };
 
   // Delete an order with confirmation
   const handleDeleteOrder = async (orderId) => {
     const shortId = orderId.slice(-6).toUpperCase();
-    if (window.confirm(`Are you sure you want to permanently delete Order #${shortId}?`)) {
+    if (window.confirm(`Are you absolutely sure you want to delete order #${shortId}? This cannot be undone.`)) {
+      setActionLoading(true);
       try {
         await api.delete(`/api/orders/${orderId}`);
-        showToast(`Order #${shortId} was deleted successfully`, 'success');
-        setOrders(prev => prev.filter(o => o._id !== orderId));
+        showToast(`Order #${shortId} permanently deleted`);
+        fetchOrders(ordersPage);
       } catch (err) {
         console.error('Delete order error:', err);
         alert('Failed to delete order. Please try again.');
+      } finally {
+        setActionLoading(false);
       }
     }
   };
@@ -133,6 +203,7 @@ const AdminDashboard = ({ onBackToShop }) => {
       name: '', 
       category: 'Honey', 
       image: '', 
+      imageFile: null,
       description: '', 
       variants: [
         { weight: '500g', price: '' },
@@ -164,61 +235,36 @@ const AdminDashboard = ({ onBackToShop }) => {
       name: product.name,
       category: matchedCategory,
       image: product.image,
+      imageFile: null,
       description: product.description,
       variants: formattedVariants,
     });
     setIsModalOpen(true);
   };
 
-  // Helper function to compress and set image from File / Blob
-  const processAndCompressImage = useCallback((file, sourceLabel = 'Uploaded') => {
+  // Helper function to set image preview from File / Blob
+  const setFilePreview = useCallback((file, sourceLabel = 'Uploaded') => {
     if (!file || !file.type.startsWith('image/')) {
       alert('Please provide a valid image (PNG, JPG, WEBP, GIF)');
       return;
     }
+    
+    if (file.size > 50 * 1024) {
+      alert('Image file size must be less than 50KB. Please compress the image.');
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 600;
-        const MAX_HEIGHT = 600;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round(height * (MAX_WIDTH / width));
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round(width * (MAX_HEIGHT / height));
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
-        setProductForm(prev => ({ ...prev, image: compressedBase64 }));
-        setPasteNotice(`✓ Image ${sourceLabel} successfully (${width}x${height}px)`);
-        setTimeout(() => setPasteNotice(''), 4000);
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
+    const previewUrl = URL.createObjectURL(file);
+    setProductForm(prev => ({ ...prev, imageFile: file, image: previewUrl }));
+    setPasteNotice(`✓ Image ${sourceLabel} successfully`);
+    setTimeout(() => setPasteNotice(''), 4000);
   }, []);
 
   // Handle standard file picker
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      processAndCompressImage(file, 'uploaded');
+      setFilePreview(file, 'uploaded');
     }
   };
 
@@ -234,7 +280,7 @@ const AdminDashboard = ({ onBackToShop }) => {
           const blob = items[i].getAsFile();
           if (blob) {
             e.preventDefault();
-            processAndCompressImage(blob, 'pasted from browser/clipboard');
+            setFilePreview(blob, 'pasted from browser/clipboard');
             return;
           }
         }
@@ -244,11 +290,11 @@ const AdminDashboard = ({ onBackToShop }) => {
     // Check if plain text clipboard has an image URL
     const pastedText = e.clipboardData?.getData('text');
     if (pastedText && pastedText.trim().match(/^https?:\/\/.*\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i)) {
-      setProductForm(prev => ({ ...prev, image: pastedText.trim() }));
+      setProductForm(prev => ({ ...prev, image: pastedText.trim(), imageFile: null }));
       setPasteNotice('✓ Image URL pasted from clipboard');
       setTimeout(() => setPasteNotice(''), 4000);
     }
-  }, [isModalOpen, processAndCompressImage]);
+  }, [isModalOpen, setFilePreview]);
 
   // Attach global paste listener when modal is open
   useEffect(() => {
@@ -273,7 +319,7 @@ const AdminDashboard = ({ onBackToShop }) => {
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      processAndCompressImage(file, 'dropped');
+      setFilePreview(file, 'dropped');
     }
   };
 
@@ -310,32 +356,46 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
-    if (!productForm.image) {
+    if (!productForm.image && !productForm.imageFile) {
       alert('Please provide, upload, or paste a product image!');
       return;
     }
+    setActionLoading(true);
 
     try {
-      const payload = {
-        ...productForm,
-        variants: productForm.variants.map(v => ({
-          weight: v.weight,
-          price: Number(v.price)
-        }))
+      const formData = new FormData();
+      formData.append('name', productForm.name);
+      formData.append('category', productForm.category);
+      formData.append('description', productForm.description);
+      formData.append('variants', JSON.stringify(productForm.variants.map(v => ({
+        weight: v.weight,
+        price: Number(v.price)
+      }))));
+
+      if (productForm.imageFile) {
+        formData.append('imageFile', productForm.imageFile);
+      } else if (productForm.image) {
+        formData.append('image', productForm.image);
+      }
+
+      const config = {
+        headers: { 'Content-Type': 'multipart/form-data' }
       };
 
       if (editingId) {
-        await api.put(`/api/products/${editingId}`, payload);
+        await api.put(`/api/products/${editingId}`, formData, config);
         showToast('Product updated successfully!');
       } else {
-        await api.post('/api/products', payload);
+        await api.post('/api/products', formData, config);
         showToast('New product added to inventory!');
       }
       setIsModalOpen(false);
-      fetchProducts();
+      fetchProducts(productsPage);
     } catch (err) {
       console.error('Save product error:', err);
       alert('Failed to save product. Please check connection and try again.');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -365,6 +425,52 @@ const AdminDashboard = ({ onBackToShop }) => {
     return orderIdMatch || nameMatch || phoneMatch || cityMatch || addressMatch || itemsMatch;
   });
 
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-[#faf8f5] flex items-center justify-center">
+        <div className="text-amber-800 flex items-center gap-2">
+          <RefreshCw className="animate-spin" size={24} /> Verifying session...
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#faf8f5] flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-3xl border border-amber-200 shadow-xl max-w-md w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-serif font-bold text-[#3c2415]">Admin Portal</h1>
+            <p className="text-amber-800 mt-2">Secure access required</p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-sm font-bold text-[#3c2415] mb-2">Admin Password</label>
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="Enter password..."
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loginLoading}
+              className="w-full py-3 bg-[#3c2415] hover:bg-[#2b1c12] text-amber-100 font-bold rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loginLoading ? <RefreshCw className="animate-spin" size={18} /> : 'Login to Dashboard'}
+            </button>
+          </form>
+          <button onClick={onBackToShop} className="mt-6 text-sm text-gray-500 hover:text-amber-800 w-full flex items-center justify-center gap-2">
+            <ArrowLeft size={16} /> Return to Shop
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#faf8f5] p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Toast Notification Banner */}
@@ -387,12 +493,20 @@ const AdminDashboard = ({ onBackToShop }) => {
             Manage incoming orders, search by order number, update inventory, and paste pictures directly from browser.
           </p>
         </div>
-        <button 
-          onClick={onBackToShop}
-          className="flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-[#3c2415] rounded-xl font-bold transition text-xs sm:text-sm cursor-pointer shadow-sm"
-        >
-          <ArrowLeft size={16} /> Back to Store
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-800 rounded-xl font-bold transition text-xs sm:text-sm shadow-sm"
+          >
+             Logout
+          </button>
+          <button 
+            onClick={onBackToShop}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-[#3c2415] rounded-xl font-bold transition text-xs sm:text-sm cursor-pointer shadow-sm"
+          >
+            <ArrowLeft size={16} /> Back to Store
+          </button>
+        </div>
       </div>
 
       {/* Navigation Tabs */}
@@ -536,7 +650,8 @@ const AdminDashboard = ({ onBackToShop }) => {
                       <select 
                         value={order.status}
                         onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                        className="text-xs font-bold bg-[#faf8f5] border border-amber-200 rounded-xl px-3 py-1.5 focus:outline-none cursor-pointer text-[#3c2415]"
+                        disabled={actionLoading}
+                        className="text-xs font-bold bg-[#faf8f5] border border-amber-200 rounded-xl px-3 py-1.5 focus:outline-none cursor-pointer text-[#3c2415] disabled:opacity-50"
                       >
                         <option value="Pending">Mark Pending</option>
                         <option value="Processing">Mark Processing</option>
@@ -546,7 +661,8 @@ const AdminDashboard = ({ onBackToShop }) => {
                       {/* DELETE ORDER BUTTON */}
                       <button
                         onClick={() => handleDeleteOrder(order._id)}
-                        className="p-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition cursor-pointer border border-transparent hover:border-red-200"
+                        disabled={actionLoading}
+                        className="p-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition cursor-pointer border border-transparent hover:border-red-200 disabled:opacity-50"
                         title="Delete Order Permanently"
                       >
                         <Trash2 size={18} />
@@ -591,6 +707,29 @@ const AdminDashboard = ({ onBackToShop }) => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls for Orders */}
+          {ordersTotalPages > 1 && (
+            <div className="flex justify-center mt-8 gap-2">
+              <button
+                disabled={ordersPage === 1}
+                onClick={() => setOrdersPage(p => p - 1)}
+                className="px-4 py-2 bg-white border border-amber-200 rounded-xl disabled:opacity-50 text-sm font-bold text-[#3c2415] hover:bg-amber-50 transition cursor-pointer"
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 font-bold text-amber-900 text-sm flex items-center">
+                Page {ordersPage} of {ordersTotalPages}
+              </span>
+              <button
+                disabled={ordersPage === ordersTotalPages}
+                onClick={() => setOrdersPage(p => p + 1)}
+                className="px-4 py-2 bg-white border border-amber-200 rounded-xl disabled:opacity-50 text-sm font-bold text-[#3c2415] hover:bg-amber-50 transition cursor-pointer"
+              >
+                Next
+              </button>
             </div>
           )}
         </div>
@@ -700,6 +839,29 @@ const AdminDashboard = ({ onBackToShop }) => {
               </div>
             ))}
           </div>
+
+          {/* Pagination Controls for Products */}
+          {productsTotalPages > 1 && (
+            <div className="flex justify-center mt-8 gap-2">
+              <button
+                disabled={productsPage === 1}
+                onClick={() => setProductsPage(p => p - 1)}
+                className="px-4 py-2 bg-white border border-amber-200 rounded-xl disabled:opacity-50 text-sm font-bold text-[#3c2415] hover:bg-amber-50 transition cursor-pointer"
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 font-bold text-amber-900 text-sm flex items-center">
+                Page {productsPage} of {productsTotalPages}
+              </span>
+              <button
+                disabled={productsPage === productsTotalPages}
+                onClick={() => setProductsPage(p => p + 1)}
+                className="px-4 py-2 bg-white border border-amber-200 rounded-xl disabled:opacity-50 text-sm font-bold text-[#3c2415] hover:bg-amber-50 transition cursor-pointer"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -913,8 +1075,10 @@ const AdminDashboard = ({ onBackToShop }) => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md cursor-pointer"
+                  disabled={actionLoading}
+                  className="flex items-center gap-2 px-6 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md cursor-pointer disabled:opacity-50"
                 >
+                  {actionLoading && <RefreshCw size={14} className="animate-spin" />}
                   Save Product
                 </button>
               </div>

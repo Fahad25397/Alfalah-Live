@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const Order = require('../models/Order');
+const { protectAdmin } = require('../middleware/auth');
 
 // POST /api/orders - Create guest order
 router.post('/', async (req, res) => {
@@ -26,17 +27,40 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/orders - Fetch all orders for admin
-router.get('/', async (req, res) => {
+router.get('/', protectAdmin, async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 0;
+    const skip = (page - 1) * limit;
+
+    let query = Order.find().sort({ createdAt: -1 });
+    
+    if (limit > 0) {
+      query = query.skip(skip).limit(limit);
+    }
+
+    const orders = await query;
+    const total = await Order.countDocuments();
+
+    if (limit > 0) {
+      res.json({
+        data: orders,
+        pagination: {
+          total,
+          page,
+          pages: Math.ceil(total / limit)
+        }
+      });
+    } else {
+      res.json(orders);
+    }
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
   }
 });
 
 // GET /api/orders/:id - Fetch single order
-router.get('/:id', async (req, res) => {
+router.get('/:id', protectAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     let order = null;
@@ -55,7 +79,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/orders/:id/status - Update order status (Pending -> Delivered / Processing)
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', protectAdmin, async (req, res) => {
   try {
     const { status } = req.body;
     const { id } = req.params;
@@ -77,7 +101,7 @@ router.put('/:id/status', async (req, res) => {
 });
 
 // DELETE /api/orders/:id - Delete an order
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protectAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     if (!id || id === 'undefined' || id === 'null') {

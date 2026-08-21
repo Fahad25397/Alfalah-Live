@@ -14,6 +14,7 @@ export const apiRequest = async (config) => {
     return await axios({
       ...config,
       url: fullUrl,
+      withCredentials: true,
     });
   } catch (err) {
     if (customBase && (err.response?.status === 404 || !err.response)) {
@@ -21,6 +22,7 @@ export const apiRequest = async (config) => {
       return await axios({
         ...config,
         url: path,
+        withCredentials: true,
       });
     }
     throw err;
