@@ -83,7 +83,10 @@ const AdminDashboard = ({ onBackToShop }) => {
     e.preventDefault();
     setLoginLoading(true);
     try {
-      await api.post('/api/admin/login', { password: loginPassword });
+      const res = await api.post('/api/admin/login', { password: loginPassword });
+      if (res.data && res.data.token) {
+        localStorage.setItem('admin_token', res.data.token);
+      }
       setIsAuthenticated(true);
       showToast('Login successful!');
     } catch (err) {
@@ -96,11 +99,14 @@ const AdminDashboard = ({ onBackToShop }) => {
   const handleLogout = async () => {
     try {
       await api.post('/api/admin/logout');
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      localStorage.removeItem('admin_token');
       setIsAuthenticated(false);
+      showToast('Logged out successfully');
       setOrders([]);
       setProducts([]);
-    } catch (err) {
-      console.error(err);
     }
   };
 

@@ -11,10 +11,17 @@ export const apiRequest = async (config) => {
   const fullUrl = customBase ? `${customBase}${path}` : path;
 
   try {
+    const token = localStorage.getItem('admin_token');
+    const headers = { ...config.headers };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     return await axios({
       ...config,
       url: fullUrl,
       withCredentials: true,
+      headers
     });
   } catch (err) {
     if (customBase && (err.response?.status === 404 || !err.response)) {
