@@ -13,7 +13,11 @@ if (process.env.NODE_ENV !== 'production') {
 const app = express();
 
 // Security Middlewares
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -66,6 +70,13 @@ app.get('/health', (req, res) => {
 });
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Health check passed' });
+});
+
+// Local uploads fallback handler for Vercel
+app.use('/uploads', (req, res) => {
+  res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.set('Access-Control-Allow-Origin', '*');
+  res.status(404).json({ error: "Local uploads are not supported on Vercel. Please configure Cloudinary environment variables." });
 });
 
 // API Routes
