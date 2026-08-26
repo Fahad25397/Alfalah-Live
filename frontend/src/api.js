@@ -6,7 +6,10 @@ import axios from 'axios';
  * - If VITE_API_URL is outdated/returns 404 or Network Error, automatically falls back to same-domain relative '/api/...'
  */
 export const apiRequest = async (config) => {
-  const customBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+  // In production, fallback to the deployed backend URL if VITE_API_URL is missing
+  const fallbackUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://backend-beige-kappa-75.vercel.app';
+  const customBase = (import.meta.env.VITE_API_URL || fallbackUrl).replace(/\/$/, '');
+  
   const path = config.url.startsWith('/') ? config.url : `/${config.url}`;
   const fullUrl = customBase ? `${customBase}${path}` : path;
 
@@ -41,8 +44,9 @@ export const getImageUrl = (imagePath) => {
   if (imagePath.startsWith('http') || imagePath.startsWith('data:') || imagePath.startsWith('blob:')) {
     return imagePath;
   }
-  // Fallback to localhost:5000 so images load properly in local dev without Vite proxy
-  const customBase = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+  // Fallback to localhost:5000 or the production backend URL
+  const fallbackUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://backend-beige-kappa-75.vercel.app';
+  const customBase = (import.meta.env.VITE_API_URL || fallbackUrl).replace(/\/$/, '');
   return `${customBase}${imagePath}`;
 };
 
