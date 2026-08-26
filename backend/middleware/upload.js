@@ -12,15 +12,19 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
     cloudinary: cloudinary,
     params: {
       folder: 'alfalah-products',
-      allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+      allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
       transformation: [{ width: 600, height: 600, crop: 'limit', quality: 'auto:good' }]
     }
   });
 } else {
   // Fallback to local storage
   const uploadDir = path.join(__dirname, '../uploads');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+  } catch (err) {
+    console.warn("Failed to create uploads directory. If on Vercel, this is expected due to read-only filesystem:", err.message);
   }
   
   storage = multer.diskStorage({

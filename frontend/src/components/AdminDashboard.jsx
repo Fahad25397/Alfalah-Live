@@ -451,7 +451,8 @@ const AdminDashboard = ({ onBackToShop }) => {
       fetchProducts(productsPage);
     } catch (err) {
       console.error('Save product error:', err);
-      alert('Failed to save product. Please check connection and try again.');
+      const backendMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert(`Failed to save product: ${backendMessage}. Please check connection and try again.`);
     } finally {
       setActionLoading(false);
     }
