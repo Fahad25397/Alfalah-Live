@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 
 // Security Middlewares
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -61,6 +61,10 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
+
+// Serve local uploads folder statically
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/admin', require('./routes/adminRoutes'));

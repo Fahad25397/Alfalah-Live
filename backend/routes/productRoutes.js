@@ -55,7 +55,14 @@ router.post('/', protectAdmin, upload.single('imageFile'), async (req, res) => {
     }
 
     // Use Cloudinary URL if a file was uploaded, otherwise fallback to the image body field
-    const imageUrl = req.file ? req.file.path : image;
+    let imageUrl = image;
+    if (req.file) {
+      if (req.file.path && req.file.path.startsWith('http')) {
+        imageUrl = req.file.path; // Cloudinary
+      } else {
+        imageUrl = `/uploads/${req.file.filename}`; // Local fallback
+      }
+    }
 
     if (!imageUrl) {
       return res.status(400).json({ message: 'Image is required' });
@@ -83,7 +90,11 @@ router.put('/:id', protectAdmin, upload.single('imageFile'), async (req, res) =>
     }
 
     if (req.file) {
-      updateData.image = req.file.path;
+      if (req.file.path && req.file.path.startsWith('http')) {
+        updateData.image = req.file.path;
+      } else {
+        updateData.image = `/uploads/${req.file.filename}`;
+      }
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(

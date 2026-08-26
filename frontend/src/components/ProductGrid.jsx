@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import api from '../api';
+import api, { getImageUrl } from '../api';
 import { Star, ShoppingCart, Loader, Search, Eye, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import ProductDetailModal from './ProductDetailModal';
 
-const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Desi Ghee'];
+const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Jam', 'Desi Ghee'];
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
@@ -156,7 +156,7 @@ const ProductGrid = () => {
       >
         <div>
           <div className="relative h-60 overflow-hidden bg-amber-50">
-            <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onClick={() => openProductModal(p)} />
+            <img src={getImageUrl(p.image)} alt={p.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onClick={() => openProductModal(p)} />
             <button onClick={() => openProductModal(p)} className="absolute inset-x-4 bottom-4 bg-white/90 backdrop-blur-md text-[#3c2415] font-semibold text-xs py-2.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer">
               <Eye size={14} /> Quick View
             </button>

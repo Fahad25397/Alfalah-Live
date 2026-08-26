@@ -3,6 +3,7 @@ import { X, Star, ShoppingCart, ShieldCheck, Heart, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext'; // <-- Added currency hook
 import SEO from './SEO';
+import { getImageUrl } from '../api';
 
 const ProductDetailModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
@@ -14,7 +15,7 @@ const ProductDetailModal = ({ product, onClose }) => {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": product.name,
-    "image": product.image,
+    "image": getImageUrl(product.image),
     "description": product.description,
     "sku": product._id,
     "offers": {
@@ -33,7 +34,7 @@ const ProductDetailModal = ({ product, onClose }) => {
         title={`${product.name} | Alfalah Store`}
         description={product.description}
         url={`https://alfalah-store.vercel.app/?product=${product._id}`}
-        image={product.image}
+        image={getImageUrl(product.image)}
         schema={productSchema}
       />
       <div className="bg-[#fffdfa] w-full max-w-2xl rounded-3xl shadow-2xl border border-amber-900/20 overflow-hidden relative p-6 md:p-8">
@@ -50,7 +51,7 @@ const ProductDetailModal = ({ product, onClose }) => {
           {/* Image Column */}
           <div className="relative rounded-2xl overflow-hidden bg-amber-50 h-64 md:h-80 border border-amber-100">
             <img 
-              src={product.image} 
+              src={getImageUrl(product.image)} 
               alt={product.name} 
               className="w-full h-full object-cover" 
             />

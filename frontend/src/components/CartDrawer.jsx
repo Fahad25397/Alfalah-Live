@@ -3,6 +3,7 @@ import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import CheckoutModal from './CheckoutModal';
+import { getImageUrl } from '../api';
 
 const CartDrawer = () => {
   const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, totalPrice } = useCart();
@@ -53,7 +54,7 @@ const CartDrawer = () => {
                     className="flex items-center gap-4 p-4 bg-[#f5eaba] backdrop-blur-sm rounded-2xl border border-amber-200/60 shadow-sm"
                   >
                     <img 
-                      src={item.image} 
+                      src={getImageUrl(item.image)} 
                       alt={item.name} 
                       className="w-16 h-16 object-cover rounded-xl border border-amber-200/60 bg-white" 
                     />

@@ -36,6 +36,16 @@ export const apiRequest = async (config) => {
   }
 };
 
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http') || imagePath.startsWith('data:') || imagePath.startsWith('blob:')) {
+    return imagePath;
+  }
+  // Fallback to localhost:5000 so images load properly in local dev without Vite proxy
+  const customBase = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+  return `${customBase}${imagePath}`;
+};
+
 export const api = {
   get: (url, config = {}) => apiRequest({ ...config, method: 'get', url }),
   post: (url, data, config = {}) => apiRequest({ ...config, method: 'post', url, data }),

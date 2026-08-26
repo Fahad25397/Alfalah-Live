@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import api from '../api';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import api, { getImageUrl } from '../api';
 import { 
   ShoppingBag, Calendar, User, Phone, MapPin, 
   CheckCircle, Clock, ArrowLeft, Package, Plus, Trash2, Edit2, X, Settings, Save, 
-  Upload, Search, Clipboard, Image as ImageIcon, Check, Filter, AlertCircle, RefreshCw
+  Upload, Search, Clipboard, Image as ImageIcon, Check, Filter, AlertCircle, RefreshCw, TrendingUp
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Desi Ghee'];
+const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Jam', 'Desi Ghee'];
 
 const DEFAULT_CURRENCIES = {
   PKR: { label: 'PKR (₨)', symbol: '₨ ', rate: 1 },
@@ -44,6 +45,10 @@ const AdminDashboard = ({ onBackToShop }) => {
     return saved ? JSON.parse(saved) : DEFAULT_CURRENCIES;
   });
   const [successCurrencyMsg, setSuccessCurrencyMsg] = useState(false);
+
+  // Revenue Analytics State
+  const [allOrdersForRevenue, setAllOrdersForRevenue] = useState([]);
+  const [fetchingRevenue, setFetchingRevenue] = useState(false);
 
   // Product Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -124,6 +129,19 @@ const AdminDashboard = ({ onBackToShop }) => {
     }
   };
 
+  const fetchAllOrdersForRevenue = async () => {
+    setFetchingRevenue(true);
+    try {
+      const response = await api.get('/api/orders?limit=0');
+      // Set empty array if nothing is returned
+      setAllOrdersForRevenue(response.data || []);
+    } catch (err) {
+      console.error('Error fetching all orders for revenue:', err);
+    } finally {
+      setFetchingRevenue(false);
+    }
+  };
+
   const fetchProducts = async (page = 1) => {
     try {
       const response = await api.get(`/api/products?page=${page}&limit=12`);
@@ -152,6 +170,35 @@ const AdminDashboard = ({ onBackToShop }) => {
       loadData();
     }
   }, [isAuthenticated, ordersPage, productsPage]);
+
+  useEffect(() => {
+    if (activeTab === 'revenue' && allOrdersForRevenue.length === 0) {
+      fetchAllOrdersForRevenue();
+    }
+  }, [activeTab]);
+
+  const revenueData = useMemo(() => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Initialize 12 buckets to ensure all months show on the chart
+    const dataMap = {};
+    monthNames.forEach(m => dataMap[m] = 0);
+
+    const arrayToProcess = Array.isArray(allOrdersForRevenue) ? allOrdersForRevenue : [];
+    
+    arrayToProcess.forEach(order => {
+      const date = new Date(order.createdAt);
+      if (isNaN(date.getTime())) return;
+
+      const monthName = monthNames[date.getMonth()];
+      dataMap[monthName] += Number(order.totalAmount || 0);
+    });
+    
+    return monthNames.map(month => ({
+      name: month,
+      revenue: dataMap[month]
+    }));
+  }, [allOrdersForRevenue]);
 
   const handleCurrencyRateChange = (code, value) => {
     setCurrencies(prev => ({
@@ -260,8 +307,8 @@ const AdminDashboard = ({ onBackToShop }) => {
       return;
     }
     
-    if (file.size > 50 * 1024) {
-      alert('Image file size must be less than 50KB. Please compress the image.');
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image file size must be less than 5MB. Please compress the image.');
       return;
     }
 
@@ -552,6 +599,16 @@ const AdminDashboard = ({ onBackToShop }) => {
         >
           <Settings size={18} /> Currency Rates
         </button>
+        <button
+          onClick={() => setActiveTab('revenue')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
+            activeTab === 'revenue'
+              ? 'bg-[#3c2415] text-amber-100 shadow-md'
+              : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-100'
+          }`}
+        >
+          <TrendingUp size={18} /> Revenue
+        </button>
       </div>
 
       {loading ? (
@@ -789,6 +846,69 @@ const AdminDashboard = ({ onBackToShop }) => {
             </button>
           </form>
         </div>
+      ) : activeTab === 'revenue' ? (
+        <div className="bg-white/70 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-black/10 shadow-sm max-w-5xl mx-auto">
+          <div className="mb-6">
+            <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#3c2415]">Revenue Statistics</h3>
+            <p className="text-xs text-amber-900/70 mt-1">
+              View your store's total revenue by month.
+            </p>
+          </div>
+          
+          {fetchingRevenue ? (
+            <div className="text-center py-20 text-amber-800 font-medium flex items-center justify-center gap-2">
+              <RefreshCw className="animate-spin text-amber-700" size={20} /> Loading revenue data...
+            </div>
+          ) : revenueData.length === 0 ? (
+            <div className="text-center py-16 bg-[#faf8f5] rounded-2xl border border-amber-100 shadow-sm">
+              <TrendingUp size={48} className="mx-auto text-amber-300 mb-3" />
+              <h3 className="text-lg font-bold text-[#3c2415]">No Revenue Data Available</h3>
+              <p className="text-xs text-gray-500 mt-1">There are no orders to display yet.</p>
+            </div>
+          ) : (
+            <div className="h-[400px] w-full mt-8">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#e5e7eb" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#6b7280', fontSize: 12, fontWeight: 500}} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#6b7280', fontSize: 12, fontWeight: 500}}
+                    tickFormatter={(value) => `Rs ${(value/1000).toFixed(0)}k`}
+                    width={60}
+                    dx={-10}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`Rs ${value.toLocaleString()}`, 'Total Revenue']}
+                    cursor={{fill: '#000000', opacity: 0.05}}
+                    contentStyle={{
+                      borderRadius: '8px', 
+                      border: '1px solid rgba(0,0,0,0.1)', 
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      padding: '12px'
+                    }}
+                    itemStyle={{ color: '#2563eb', fontWeight: 600 }}
+                  />
+                  <Bar 
+                    dataKey="revenue" 
+                    fill="#2563eb" 
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
       ) : (
         /* PRODUCT INVENTORY TAB */
         <div>
@@ -805,7 +925,7 @@ const AdminDashboard = ({ onBackToShop }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((p) => (
               <div key={p._id} className="bg-white rounded-2xl p-4 border border-amber-100 shadow-md flex gap-4 hover:border-amber-300 transition">
-                <img src={p.image} alt={p.name} className="w-24 h-24 object-cover rounded-xl border border-amber-100 flex-shrink-0 bg-amber-50" />
+                <img src={getImageUrl(p.image)} alt={p.name} className="w-24 h-24 object-cover rounded-xl border border-amber-100 flex-shrink-0 bg-amber-50" />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h4 className="font-bold text-[#3c2415] line-clamp-1">{p.name}</h4>
@@ -987,7 +1107,7 @@ const AdminDashboard = ({ onBackToShop }) => {
                     <div className="flex items-center gap-4 p-3 bg-amber-50/60 rounded-xl border border-amber-200">
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-amber-300 bg-white flex-shrink-0">
                         <img 
-                          src={productForm.image} 
+                          src={getImageUrl(productForm.image)} 
                           alt="Preview" 
                           className="w-full h-full object-cover" 
                         />

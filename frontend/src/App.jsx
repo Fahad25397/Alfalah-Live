@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import AdminDashboard from './components/AdminDashboard';
 import SEO from './components/SEO';
+import WhatsAppIcon from './components/WhatsAppIcon';
 import { Lock, ShieldCheck } from 'lucide-react';
 
 // Public Storefront Component
@@ -71,6 +72,8 @@ const Storefront = () => {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
       />
+      
+      <WhatsAppIcon />
     </div>
   );
 };
