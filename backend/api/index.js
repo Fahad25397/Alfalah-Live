@@ -92,4 +92,13 @@ if (process.env.NODE_ENV !== 'production' && require.main === module) {
   app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
 }
 
+// Global Error Handler for Vercel
+app.use((err, req, res, next) => {
+  console.error('Express Error:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'production' ? err.toString() : err,
+  });
+});
+
 module.exports = app;
