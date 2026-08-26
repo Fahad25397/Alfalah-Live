@@ -13,6 +13,8 @@ const app = express();
 // Security Middlewares
 app.use(helmet({
   crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false,
 }));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -66,7 +68,12 @@ app.use(cookieParser());
 
 // Serve local uploads folder statically
 const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, path, stat) => {
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.set('Access-Control-Allow-Origin', '*');
+  }
+}));
 
 // Routes
 app.use('/api/admin', require('./routes/adminRoutes'));
