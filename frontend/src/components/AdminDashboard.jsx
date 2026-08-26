@@ -432,7 +432,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
       if (productForm.imageFile) {
         formData.append('imageFile', productForm.imageFile);
-      } else if (productForm.image) {
+      } else if (productForm.image && !productForm.image.startsWith('blob:')) {
         formData.append('image', productForm.image);
       }
 
