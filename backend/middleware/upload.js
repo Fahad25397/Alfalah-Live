@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 let storage;
-const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
+const useCloudinary = (process.env.CLOUDINARY_CLOUD_NAME || 'lm6l4tpm') && (process.env.CLOUDINARY_API_KEY || '577294165855747') && (process.env.CLOUDINARY_API_SECRET || 'lCjTdCyNFukz4dPVz7RNUfWYQGM');
 
 if (useCloudinary) {
   // Use Cloudinary
