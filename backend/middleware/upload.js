@@ -5,41 +5,54 @@ const fs = require('fs');
 const path = require('path');
 
 let storage;
+const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
 
-if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-  // Use Cloudinary if configured
+if (useCloudinary) {
+  // Use Cloudinary
   storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
       folder: 'alfalah-products',
-      transformation: [{ width: 600, height: 600, crop: 'limit', quality: 'auto:good' }]
+      allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif', 'svg'],
+      transformation: [{ width: 800, crop: 'limit', quality: 'auto:good' }]
     }
   });
 } else {
-  // Fallback to local storage
+  // Use Local Disk
   const uploadDir = path.join(__dirname, '../uploads');
   try {
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
   } catch (err) {
-    console.warn("Failed to create uploads directory. If on Vercel, this is expected due to read-only filesystem:", err.message);
+    console.warn("Could not create uploads directory:", err.message);
   }
   
   storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, uploadDir)
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname))
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+      // Handle pasted files that might not have an originalname
+      const ext = file.originalname ? path.extname(file.originalname) : '.jpg';
+      cb(null, `product-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`);
     }
   });
 }
 
-// Configure multer without file size limits
-const upload = multer({ 
-  storage: storage
-});
+const multerInstance = multer({ storage });
 
-module.exports = upload;
+// Wrapper middleware to catch upload crashes cleanly
+const uploadMiddleware = (req, res, next) => {
+  const uploadSingle = multerInstance.single('imageFile');
+  uploadSingle(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ message: `Upload error: ${err.message}` });
+    } else if (err) {
+      console.error('File Upload Crash:', err);
+      return res.status(500).json({ 
+        message: 'Image upload failed. If on Vercel, check Cloudinary credentials.',
+        error: err.message || err.toString()
+      });
+    }
+    next();
+  });
+};
+
+module.exports = uploadMiddleware;

@@ -40,7 +40,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/products - Add a new product (Protected)
-router.post('/', protectAdmin, upload.single('imageFile'), async (req, res) => {
+router.post('/', protectAdmin, upload, async (req, res) => {
   try {
     const { name, category, description, image } = req.body;
     let variants = req.body.variants;
@@ -77,7 +77,7 @@ router.post('/', protectAdmin, upload.single('imageFile'), async (req, res) => {
 });
 
 // PUT /api/products/:id - Edit an existing product (Protected)
-router.put('/:id', protectAdmin, upload.single('imageFile'), async (req, res) => {
+router.put('/:id', protectAdmin, upload, async (req, res) => {
   try {
     const updateData = { ...req.body };
     
