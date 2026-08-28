@@ -416,6 +416,43 @@ const AdminDashboard = ({ onBackToShop }) => {
     setActionLoading(true);
 
     try {
+      let finalImageFile = productForm.imageFile;
+      
+      // Compress image client-side to easily bypass Vercel's strict 4.5MB payload limit
+      if (finalImageFile && finalImageFile.type.startsWith('image/')) {
+        try {
+          const compressImage = (file, maxWidth = 800) => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  const scale = Math.min(maxWidth / img.width, 1);
+                  canvas.width = img.width * scale;
+                  canvas.height = img.height * scale;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                  canvas.toBlob((blob) => {
+                    resolve(new File([blob], file.name || 'image.jpg', { type: 'image/jpeg' }));
+                  }, 'image/jpeg', 0.85);
+                };
+                img.onerror = error => reject(error);
+              };
+              reader.onerror = error => reject(error);
+            });
+          };
+          
+          if (finalImageFile.size > 500 * 1024) { // Only compress if larger than 500kb
+            finalImageFile = await compressImage(finalImageFile);
+          }
+        } catch (compressionErr) {
+          console.warn("Failed to compress image client-side, proceeding with original", compressionErr);
+        }
+      }
+
       const formData = new FormData();
       formData.append('name', productForm.name);
       formData.append('category', productForm.category);
@@ -425,8 +462,8 @@ const AdminDashboard = ({ onBackToShop }) => {
         price: Number(v.price)
       }))));
 
-      if (productForm.imageFile) {
-        formData.append('imageFile', productForm.imageFile);
+      if (finalImageFile) {
+        formData.append('imageFile', finalImageFile);
       } else if (productForm.image && !productForm.image.startsWith('blob:')) {
         formData.append('image', productForm.image);
       }
