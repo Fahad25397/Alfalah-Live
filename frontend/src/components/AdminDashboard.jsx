@@ -302,19 +302,14 @@ const AdminDashboard = ({ onBackToShop }) => {
 
   // Helper function to set image preview from File / Blob
   const setFilePreview = useCallback((file, sourceLabel = 'Uploaded') => {
-    if (!file || !file.type.startsWith('image/')) {
-      alert('Please provide a valid image (PNG, JPG, WEBP, GIF)');
-      return;
-    }
-    
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image file size must be less than 5MB. Please compress the image.');
+    if (!file) {
+      alert('Please provide a valid file');
       return;
     }
 
     const previewUrl = URL.createObjectURL(file);
     setProductForm(prev => ({ ...prev, imageFile: file, image: previewUrl }));
-    setPasteNotice(`✓ Image ${sourceLabel} successfully`);
+    setPasteNotice(`✓ File ${sourceLabel} successfully`);
     setTimeout(() => setPasteNotice(''), 4000);
   }, []);
 
@@ -347,9 +342,9 @@ const AdminDashboard = ({ onBackToShop }) => {
 
     // Check if plain text clipboard has an image URL
     const pastedText = e.clipboardData?.getData('text');
-    if (pastedText && pastedText.trim().match(/^https?:\/\/.*\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i)) {
+    if (pastedText && (pastedText.trim().startsWith('http') || pastedText.trim().startsWith('data:'))) {
       setProductForm(prev => ({ ...prev, image: pastedText.trim(), imageFile: null }));
-      setPasteNotice('✓ Image URL pasted from clipboard');
+      setPasteNotice('✓ URL pasted from clipboard');
       setTimeout(() => setPasteNotice(''), 4000);
     }
   }, [isModalOpen, setFilePreview]);
@@ -1074,7 +1069,6 @@ const AdminDashboard = ({ onBackToShop }) => {
                         <Upload size={14} className="text-amber-700" /> Browse File
                         <input 
                           type="file" 
-                          accept="image/*" 
                           onChange={handleImageUpload} 
                           className="hidden" 
                         />

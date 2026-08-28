@@ -12,7 +12,6 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
     cloudinary: cloudinary,
     params: {
       folder: 'alfalah-products',
-      allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
       transformation: [{ width: 600, height: 600, crop: 'limit', quality: 'auto:good' }]
     }
   });
@@ -38,10 +37,9 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
   });
 }
 
-// Configure multer with file size limits (e.g. 5MB)
+// Configure multer without file size limits
 const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } 
+  storage: storage
 });
 
 module.exports = upload;
