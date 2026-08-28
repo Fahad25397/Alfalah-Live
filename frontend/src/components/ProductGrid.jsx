@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import ProductDetailModal from './ProductDetailModal';
 
-const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Jam', 'Desi Ghee'];
+const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
@@ -97,6 +97,7 @@ const ProductGrid = () => {
     if (tCat === 'honey' && pCat.includes('honey')) return true;
     if (tCat === 'dry fruits' && (pCat.includes('dry') || pCat.includes('fruit') || pCat.includes('pistachio') || pCat.includes('almond') || pCat.includes('cashew'))) return true;
     if (tCat === 'for men' && (pCat.includes('for men') || pCat.includes('men'))) return true;
+    if (tCat === 'daily wellness' && (pCat.includes('daily') || pCat.includes('wellness'))) return true;
 
     return pCat === tCat;
   };
