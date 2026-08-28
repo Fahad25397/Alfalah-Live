@@ -6,6 +6,7 @@ import {
   Upload, Search, Clipboard, Image as ImageIcon, Check, Filter, AlertCircle, RefreshCw, TrendingUp
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import imageCompression from 'browser-image-compression';
 
 const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
 
@@ -418,36 +419,19 @@ const AdminDashboard = ({ onBackToShop }) => {
     try {
       let finalImageFile = productForm.imageFile;
       
-      // Compress image client-side to easily bypass Vercel's strict 4.5MB payload limit
+      // Compress image client-side using browser-image-compression
       if (finalImageFile && finalImageFile.type.startsWith('image/')) {
         try {
-          const compressImage = (file, maxWidth = 800) => {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                  const canvas = document.createElement('canvas');
-                  const scale = Math.min(maxWidth / img.width, 1);
-                  canvas.width = img.width * scale;
-                  canvas.height = img.height * scale;
-                  const ctx = canvas.getContext('2d');
-                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                  canvas.toBlob((blob) => {
-                    resolve(new File([blob], file.name || 'image.jpg', { type: 'image/jpeg' }));
-                  }, 'image/jpeg', 0.85);
-                };
-                img.onerror = error => reject(error);
-              };
-              reader.onerror = error => reject(error);
-            });
+          const options = {
+            maxSizeMB: 1, // Max size in MB
+            maxWidthOrHeight: 1200,
+            useWebWorker: true,
+            fileType: 'image/jpeg' // Force conversion to JPEG to prevent format issues
           };
-          
-          if (finalImageFile.size > 500 * 1024) { // Only compress if larger than 500kb
-            finalImageFile = await compressImage(finalImageFile);
-          }
+          // Compress every image regardless of size to ensure format conversion
+          const compressedBlob = await imageCompression(finalImageFile, options);
+          // Convert Blob back to File
+          finalImageFile = new File([compressedBlob], finalImageFile.name || 'image.jpg', { type: 'image/jpeg' });
         } catch (compressionErr) {
           console.warn("Failed to compress image client-side, proceeding with original", compressionErr);
         }
