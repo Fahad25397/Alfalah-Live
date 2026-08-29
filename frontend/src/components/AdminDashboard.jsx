@@ -64,8 +64,8 @@ const AdminDashboard = ({ onBackToShop }) => {
     image: '',
     description: '',
     variants: [
-      { weight: '500g', price: '' },
-      { weight: '1000g', price: '' }
+      { weight: '500g', price: '', isSale: false, oldPrice: '', outOfStock: false },
+      { weight: '1000g', price: '', isSale: false, oldPrice: '', outOfStock: false }
     ]
   });
 
@@ -260,8 +260,8 @@ const AdminDashboard = ({ onBackToShop }) => {
       imageFile: null,
       description: '', 
       variants: [
-        { weight: '500g', price: '' },
-        { weight: '1000g', price: '' }
+        { weight: '500g', price: '', isSale: false, oldPrice: '', outOfStock: false },
+        { weight: '1000g', price: '', isSale: false, oldPrice: '', outOfStock: false }
       ] 
     });
     setIsModalOpen(true);
@@ -283,11 +283,17 @@ const AdminDashboard = ({ onBackToShop }) => {
     let formattedVariants = product.variants && product.variants.length > 0 
       ? product.variants.map(v => ({
           weight: v.weight,
-          price: v.price ?? ''
+          price: v.price ?? '',
+          isSale: v.isSale || false,
+          oldPrice: v.oldPrice ?? '',
+          outOfStock: v.outOfStock || false
         }))
       : [{ 
           weight: product.weight || 'Standard', 
-          price: product.price ?? '' 
+          price: product.price ?? '',
+          isSale: product.isSale || false,
+          oldPrice: product.oldPrice ?? '',
+          outOfStock: product.outOfStock || false
         }];
 
     setProductForm({
@@ -386,7 +392,7 @@ const AdminDashboard = ({ onBackToShop }) => {
   const addVariantField = () => {
     setProductForm({
       ...productForm,
-      variants: [...productForm.variants, { weight: '', price: '' }]
+      variants: [...productForm.variants, { weight: '', price: '', isSale: false, oldPrice: '', outOfStock: false }]
     });
   };
 
@@ -443,7 +449,10 @@ const AdminDashboard = ({ onBackToShop }) => {
       formData.append('description', productForm.description);
       formData.append('variants', JSON.stringify(productForm.variants.map(v => ({
         weight: v.weight,
-        price: Number(v.price)
+        price: Number(v.price),
+        isSale: Boolean(v.isSale),
+        oldPrice: v.oldPrice ? Number(v.oldPrice) : null,
+        outOfStock: Boolean(v.outOfStock)
       }))));
 
       if (finalImageFile) {
@@ -1166,34 +1175,70 @@ const AdminDashboard = ({ onBackToShop }) => {
 
                 <div className="space-y-3">
                   {productForm.variants.map((v, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        placeholder="Weight (e.g. 500g)"
-                        value={v.weight}
-                        onChange={(e) => handleVariantChange(index, 'weight', e.target.value)}
-                        required
-                        className="flex-1 px-3 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                      />
-                      <input
-                        type="number"
-                        step="any"
-                        placeholder="Price (PKR)"
-                        value={v.price}
-                        onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
-                        required
-                        className="flex-1 px-3 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                      />
-                      {productForm.variants.length > 1 && (
-                        <button 
-                          type="button" 
-                          onClick={() => removeVariantField(index)} 
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
-                          title="Remove variant"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
+                    <div key={index} className="flex flex-col gap-2 p-3 bg-amber-50/30 rounded-xl border border-amber-100">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="text"
+                          placeholder="Weight (e.g. 500g)"
+                          value={v.weight}
+                          onChange={(e) => handleVariantChange(index, 'weight', e.target.value)}
+                          required
+                          className="flex-1 px-3 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                        <input
+                          type="number"
+                          step="any"
+                          placeholder="Sale Price (PKR)"
+                          value={v.price}
+                          onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                          required
+                          className="flex-1 px-3 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                        {productForm.variants.length > 1 && (
+                          <button 
+                            type="button" 
+                            onClick={() => removeVariantField(index)} 
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                            title="Remove variant"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-3 mt-1">
+                        <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-[#3c2415]">
+                          <input
+                            type="checkbox"
+                            checked={v.isSale || false}
+                            onChange={(e) => handleVariantChange(index, 'isSale', e.target.checked)}
+                            className="w-4 h-4 text-amber-600 rounded border-amber-300 focus:ring-amber-500"
+                          />
+                          On Sale
+                        </label>
+
+                        <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-[#3c2415] ml-4">
+                          <input
+                            type="checkbox"
+                            checked={v.outOfStock || false}
+                            onChange={(e) => handleVariantChange(index, 'outOfStock', e.target.checked)}
+                            className="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500"
+                          />
+                          Out of Stock
+                        </label>
+                        
+                        {v.isSale && !v.outOfStock && (
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="Old Price (crossed out)"
+                            value={v.oldPrice || ''}
+                            onChange={(e) => handleVariantChange(index, 'oldPrice', e.target.value)}
+                            required={v.isSale}
+                            className="w-40 px-3 py-1.5 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          />
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

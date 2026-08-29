@@ -4,3 +4,9 @@ node_modules/
 npm-debug.log*
 .DS_Store
 .vercel
+.env*
+
+.wwebjs_auth/
+.wwebjs_cache/
+qr.txt
+test.png

@@ -11,6 +11,10 @@ const ProductDetailModal = ({ product, onClose }) => {
 
   if (!product) return null;
 
+  const displayVariant = product.variants && product.variants.length > 0 
+    ? product.variants[0] 
+    : { weight: product.weight || 'Standard', price: product.price || 0, isSale: product.isSale, oldPrice: product.oldPrice, outOfStock: product.outOfStock };
+
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -22,7 +26,7 @@ const ProductDetailModal = ({ product, onClose }) => {
       "@type": "Offer",
       "url": `https://alfalah-store.vercel.app/?product=${product._id}`,
       "priceCurrency": "PKR",
-      "price": product.price,
+      "price": displayVariant.price,
       "availability": "https://schema.org/InStock",
       "itemCondition": "https://schema.org/NewCondition"
     }
@@ -53,10 +57,23 @@ const ProductDetailModal = ({ product, onClose }) => {
             <img 
               src={getImageUrl(product.image)} 
               alt={product.name} 
-              className="w-full h-full object-cover" 
+              className={`w-full h-full object-cover ${displayVariant.outOfStock ? 'opacity-50 grayscale' : ''}`}
             />
+            
+            {displayVariant.outOfStock ? (
+              <span className="absolute top-3 right-3 bg-gray-800 text-white font-bold text-xs px-3 py-1 rounded-full shadow-md z-10 pointer-events-none">
+                OUT OF STOCK
+              </span>
+            ) : displayVariant.isSale && (
+              <span className="absolute top-3 right-3 bg-red-600 text-white font-bold text-xs px-3 py-1 rounded-full shadow-md z-10 pointer-events-none">
+                {displayVariant.oldPrice && displayVariant.oldPrice > displayVariant.price 
+                  ? `-${Math.round(((displayVariant.oldPrice - displayVariant.price) / displayVariant.oldPrice) * 100)}% OFF`
+                  : 'SALE'}
+              </span>
+            )}
+
             <span className="absolute top-3 left-3 bg-amber-500 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-sm">
-              {product.weight}
+              {displayVariant.weight}
             </span>
           </div>
 
@@ -68,8 +85,16 @@ const ProductDetailModal = ({ product, onClose }) => {
                 <span className="font-semibold text-amber-900">5.0 Organic Grade</span>
               </div>
               <h2 className="text-2xl font-serif font-bold text-[#3c2415]">{product.name}</h2>
-              {/* Updated to use formatPrice instead of hardcoded $ */}
-              <span className="text-2xl font-bold text-amber-700 mt-1 block">{formatPrice(product.price)}</span>
+              <div className="flex items-baseline flex-wrap gap-x-2 mt-1">
+                {displayVariant.isSale && displayVariant.oldPrice && (
+                  <span className="text-lg font-bold text-gray-400 line-through">
+                    {formatPrice(displayVariant.oldPrice)}
+                  </span>
+                )}
+                <span className="text-2xl font-bold text-amber-700 block">
+                  {formatPrice(displayVariant.price)}
+                </span>
+              </div>
             </div>
 
             <p className="text-amber-900/80 text-sm leading-relaxed">
@@ -99,9 +124,14 @@ const ProductDetailModal = ({ product, onClose }) => {
                   addToCart(product);
                   onClose();
                 }}
-                className="flex-1 py-3 bg-[#3c2415] hover:bg-amber-600 text-amber-100 font-bold rounded-xl transition flex items-center justify-center gap-2 text-sm cursor-pointer shadow-lg"
+                disabled={displayVariant.outOfStock}
+                className={`flex-1 py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm shadow-lg ${
+                  displayVariant.outOfStock
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#3c2415] hover:bg-amber-600 text-amber-100 font-bold cursor-pointer'
+                }`}
               >
-                <ShoppingCart size={18} /> Add to Cart
+                <ShoppingCart size={18} /> {displayVariant.outOfStock ? 'Out of Stock' : 'Add to Cart'}
               </button>
             </div>
           </div>

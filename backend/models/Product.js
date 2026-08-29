@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 
 const variantSchema = new mongoose.Schema({
   weight: { type: String, required: true }, // e.g., "500g", "1000g"
-  price: { type: Number, required: true }   // e.g., 15, 28
+  price: { type: Number, required: true },  // e.g., 15, 28
+  isSale: { type: Boolean, default: false },
+  oldPrice: { type: Number },
+  outOfStock: { type: Boolean, default: false }
 });
 
 const productSchema = new mongoose.Schema({

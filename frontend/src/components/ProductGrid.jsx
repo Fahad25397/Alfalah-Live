@@ -157,7 +157,20 @@ const ProductGrid = () => {
       >
         <div>
           <div className="relative h-60 overflow-hidden bg-amber-50">
-            <img src={getImageUrl(p.image)} alt={p.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onClick={() => openProductModal(p)} />
+            <img src={getImageUrl(p.image)} alt={p.name} loading="lazy" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer ${currentVariant.outOfStock ? 'opacity-50 grayscale' : ''}`} onClick={() => openProductModal(p)} />
+            
+            {currentVariant.outOfStock ? (
+              <span className="absolute top-4 right-4 bg-gray-800 text-white font-bold text-xs px-3 py-1 rounded-full shadow-md z-10 pointer-events-none">
+                OUT OF STOCK
+              </span>
+            ) : currentVariant.isSale && (
+              <span className="absolute top-4 right-4 bg-red-600 text-white font-bold text-xs px-3 py-1 rounded-full shadow-md z-10 pointer-events-none">
+                {currentVariant.oldPrice && currentVariant.oldPrice > currentVariant.price 
+                  ? `-${Math.round(((currentVariant.oldPrice - currentVariant.price) / currentVariant.oldPrice) * 100)}% OFF`
+                  : 'SALE'}
+              </span>
+            )}
+
             <button onClick={() => openProductModal(p)} className="absolute inset-x-4 bottom-4 bg-white/90 backdrop-blur-md text-[#3c2415] font-semibold text-xs py-2.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer">
               <Eye size={14} /> Quick View
             </button>
@@ -209,13 +222,27 @@ const ProductGrid = () => {
         <div className="p-5 pt-0 flex items-center justify-between mt-4">
           <div>
             <span className="text-[10px] text-[#3c2415]/60 uppercase font-bold tracking-wider block">Price</span>
-            <span dir="ltr" className="inline-block text-xl font-serif font-bold text-[#3c2415]">{formatPrice(currentVariant.price)}</span>
+            <div className="flex items-baseline flex-wrap gap-x-2">
+              {currentVariant.isSale && currentVariant.oldPrice && (
+                <span dir="ltr" className="inline-block text-sm font-semibold text-gray-400 line-through">
+                  {formatPrice(currentVariant.oldPrice)}
+                </span>
+              )}
+              <span dir="ltr" className="inline-block text-xl font-serif font-bold text-[#3c2415]">
+                {formatPrice(currentVariant.price)}
+              </span>
+            </div>
           </div>
           <button 
             onClick={() => handleAddToCartWithVariant(p)} 
-            className="px-5 py-3 bg-[#3c2415] hover:bg-[#2b1c12] text-[#f4ecd8] rounded-2xl transition flex items-center gap-2 text-xs font-medium cursor-pointer shadow-md active:scale-95"
+            disabled={currentVariant.outOfStock}
+            className={`px-5 py-3 rounded-2xl transition flex items-center gap-2 text-xs font-medium shadow-md ${
+              currentVariant.outOfStock 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-[#3c2415] hover:bg-[#2b1c12] text-[#f4ecd8] cursor-pointer active:scale-95'
+            }`}
           >
-            <ShoppingCart size={15} /> Add
+            <ShoppingCart size={15} /> {currentVariant.outOfStock ? 'Out of Stock' : 'Add'}
           </button>
         </div>
       </div>
