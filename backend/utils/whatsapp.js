@@ -15,8 +15,9 @@ let client = null;
 
 if (!isVercel) {
   try {
-    const { Client, LocalAuth } = require('whatsapp-web.js');
-    const qrcode = require('qrcode-terminal');
+    const req = eval('require');
+    const { Client, LocalAuth } = req('whatsapp-web.js');
+    const qrcode = req('qrcode-terminal');
 
     // Common paths for Chrome/Edge on Windows
     const executablePaths = [
