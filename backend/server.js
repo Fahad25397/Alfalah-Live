@@ -64,39 +64,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS configuration for production
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'http://localhost:5173', // Vite dev server
-      'http://localhost:3000', // Alternative dev port
-      process.env.FRONTEND_URL, // Production frontend URL from env
-    ].filter(Boolean);
-    
-    // Allow any vercel.app subdomain
-    if (origin.endsWith('.vercel.app')) {
-      return callback(null, true);
-    }
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
+// CORS configuration for production (Removed in favor of manual override)
 
 // Increase JSON / urlencoded payload limits for image uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-app.use(cors(corsOptions));
 app.use(cookieParser());
 
 // Serve local uploads folder statically

@@ -63,22 +63,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Standard CORS configuration for Express routes
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (origin.endsWith('.vercel.app') || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
-      return callback(null, true);
-    }
-    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
-      return callback(null, true);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// Standard CORS configuration for Express routes (Removed in favor of manual override)
 
 // Connect to MongoDB before handling requests
 app.use(async (req, res, next) => {
