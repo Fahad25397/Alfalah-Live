@@ -5,7 +5,6 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
-const { initWhatsApp } = require('./utils/whatsapp');
 
 dotenv.config();
 
@@ -29,37 +28,6 @@ app.use('/api', limiter);
 app.get('/', (req, res) => {
   res.json({ status: 'OK', message: 'Alfalah Honey API is running' });
 });
-
-// WhatsApp QR Code endpoint
-app.get('/api/whatsapp/qr', (req, res) => {
-  try {
-    const fs = require('fs');
-    if (fs.existsSync('qr.txt')) {
-      const qrText = fs.readFileSync('qr.txt', 'utf8');
-      res.send(`
-        <html>
-          <head>
-            <title>WhatsApp QR Code</title>
-            <meta http-equiv="refresh" content="5">
-            <style>body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #faf8f5; font-family: sans-serif; text-align: center; }</style>
-          </head>
-          <body>
-            <h2>Scan with WhatsApp (Linked Devices)</h2>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrText)}" />
-            <p>This page auto-refreshes every 5 seconds.</p>
-            <p>Once you scan it from the WhatsApp app, this page will still refresh but you can close it.</p>
-            <p>Check your backend terminal to confirm it says "Client is ready".</p>
-          </body>
-        </html>
-      `);
-    } else {
-      res.send('<h2>Waiting for QR code... If you already scanned it, the bot is authenticated.</h2><script>setTimeout(()=>window.location.reload(),5000);</script>');
-    }
-  } catch (e) {
-    res.send('<h2>Error loading QR code</h2>');
-  }
-});
-
 // Connect to MongoDB
 connectDB();
 
@@ -127,7 +95,4 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  
-  // Initialize WhatsApp Bot Client
-  initWhatsApp();
 });

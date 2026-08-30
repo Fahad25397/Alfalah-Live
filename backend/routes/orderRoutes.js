@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const Order = require('../models/Order');
 const { protectAdmin } = require('../middleware/auth');
-const { sendWhatsAppMessage } = require('../utils/whatsapp');
 
 // POST /api/orders - Create guest order
 router.post('/', async (req, res) => {
@@ -21,27 +20,6 @@ router.post('/', async (req, res) => {
     });
 
     const createdOrder = await order.save();
-    
-    // Send WhatsApp Message asynchronously
-    if (customer && customer.phone) {
-      const customerName = customer.fullName || customer.name || 'Customer';
-      const message = `Welcome to the Alfalah Honey family, ${customerName}.
-Your step toward a healthier lifestyle is confirmed. We have received your order #${createdOrder._id.toString().slice(-6)} for our premium, pure honey.
-
-Delivery Information:
-Our team is carefully packaging your customizable sticker jar to ensure it reaches you securely. Delivery typically takes 3 to 5 business days.
-
-Total Order Value: Rs. ${totalAmount}
-
-"Eat Good, Live Good" is more than a mindset—it is a lifestyle. Thank you for choosing organic purity.
-
-Best regards,
-Team Alfalah Honey`;
-
-      sendWhatsAppMessage(customer.phone, message).catch(err => {
-        console.error('WhatsApp Error:', err);
-      });
-    }
 
     res.status(201).json(createdOrder);
   } catch (error) {
