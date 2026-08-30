@@ -23,7 +23,6 @@ export const apiRequest = async (config) => {
     return await axios({
       ...config,
       url: fullUrl,
-      withCredentials: true,
       headers
     });
   } catch (err) {
@@ -32,7 +31,6 @@ export const apiRequest = async (config) => {
       return await axios({
         ...config,
         url: path,
-        withCredentials: true,
       });
     }
     throw err;
