@@ -64,7 +64,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS configuration for production (Removed in favor of manual override)
+// Enable CORS for all routes
+app.use(cors());
 
 // Increase JSON / urlencoded payload limits for image uploads
 app.use(express.json({ limit: '50mb' }));
