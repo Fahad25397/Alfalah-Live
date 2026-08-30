@@ -31,7 +31,10 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 // Enable CORS for all routes (since we removed withCredentials, a wildcard * works perfectly)
-app.use(cors());
+app.use(cors({ optionsSuccessStatus: 200 }));
+
+// Explicitly handle all OPTIONS requests to prevent Vercel Edge from dropping headers
+app.options('*', cors({ optionsSuccessStatus: 200 }));
 
 // Standard CORS configuration for Express routes (Removed in favor of manual override)
 
