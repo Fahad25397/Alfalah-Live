@@ -198,10 +198,12 @@ const ProductGrid = () => {
             <h3 onClick={() => openProductModal(p)} className="font-serif font-bold text-lg text-[#3c2415] hover:text-amber-700 transition cursor-pointer truncate">
               {p.name}
             </h3>
-            {p.urduName && (
+            {p.urduName ? (
               <h4 dir="rtl" className="font-bold text-[15px] text-[#3c2415] opacity-90 truncate mt-0.5">
                 {p.urduName}
               </h4>
+            ) : (
+              <div className="h-[22.5px] mt-0.5" />
             )}
             <p className="text-[#3c2415]/70 text-xs mt-1.5 line-clamp-2 font-light leading-relaxed">
               {p.description}

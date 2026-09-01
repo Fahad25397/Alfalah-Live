@@ -911,8 +911,10 @@ const AdminDashboard = ({ onBackToShop }) => {
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h4 className="font-bold text-[#3c2415] line-clamp-1">{p.name}</h4>
-                    {p.urduName && (
+                    {p.urduName ? (
                       <h5 dir="rtl" className="font-bold text-[13px] text-[#3c2415] opacity-90 mt-0.5">{p.urduName}</h5>
+                    ) : (
+                      <div className="h-[19.5px] mt-0.5" />
                     )}
                     <span className="inline-block text-[11px] text-amber-900 font-bold bg-amber-100 px-2 py-0.5 rounded mt-1">
                       {p.category || 'Honey'}
