@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext';
+
 import CheckoutModal from './CheckoutModal';
 import { getImageUrl } from '../api';
 
 const CartDrawer = () => {
   const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, totalPrice } = useCart();
-  const { formatPrice } = useCurrency();
+  const formatPrice = (price) => `Rs. ${price}`;
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   if (!isCartOpen) return null;
@@ -64,6 +64,9 @@ const CartDrawer = () => {
                     />
                     <div className="flex-1">
                       <h4 className="font-serif font-bold text-[#3c2415] text-sm">{item.name}</h4>
+                      {item.urduName && (
+                        <h5 dir="rtl" className="font-bold text-[#3c2415] text-[13px] opacity-90 mt-0.5">{item.urduName}</h5>
+                      )}
                       {item.weight && <span className="text-[11px] text-[#3c2415]/70 font-medium block">{item.weight}</span>}
                       <span dir="ltr" className="text-[#3c2415] font-semibold text-sm">{formatPrice(item.price)}</span>
                       

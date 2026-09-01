@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { ShoppingBag, Globe, Menu, X } from 'lucide-react';
-import { useCurrency } from '../context/CurrencyContext';
+
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
-  const { currentCurrency, setCurrentCurrency, currencies } = useCurrency();
+
   const { setIsCartOpen, totalItems } = useCart();
 
   // State to track which navigation pill is currently active
@@ -26,7 +26,7 @@ const Navbar = () => {
         {/* Brand Title */}
         <div className="flex items-center gap-3">
           <span className="text-xl lg:text-2xl font-serif font-bold text-[#3c2415] tracking-widest">
-            ALFALAH
+            Alfalah Honey
           </span>
         </div>
 
@@ -56,21 +56,7 @@ const Navbar = () => {
         {/* Right Actions - Currency Dropdown, Cart Button & Mobile Menu Toggle */}
         <div className="flex items-center gap-2 sm:gap-4">
 
-          {/* Currency Selector (Always Visible on all screen sizes) */}
-          <div className="flex items-center gap-1.5 bg-[#f7d648]/80 border border-amber-400/60 px-2.5 sm:px-3 py-2 rounded-full text-xs font-medium text-[#3c2415] shadow-xs backdrop-blur-sm">
-            <Globe size={13} className="text-[#3c2415]/70 flex-shrink-0" />
-            <select
-              value={currentCurrency}
-              onChange={(e) => setCurrentCurrency(e.target.value)}
-              className="bg-transparent focus:outline-none cursor-pointer font-medium text-[#3c2415]"
-            >
-              {Object.keys(currencies).map((code) => (
-                <option key={code} value={code} className="bg-[#EDC001] text-[#3c2415]">
-                  {code} ({currencies[code].symbol})
-                </option>
-              ))}
-            </select>
-          </div>
+
 
           {/* Cart Button */}
           <button

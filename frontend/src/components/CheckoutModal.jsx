@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { X, CheckCircle, Loader } from 'lucide-react';
 import api from '../api';
 import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext'; // <-- Added currency hook
+
 
 const CheckoutModal = ({ isOpen, onClose }) => {
   const { cart, totalPrice, clearCart, setIsCartOpen } = useCart();
-  const { formatPrice } = useCurrency(); // <-- Initialized currency formatter
+  const formatPrice = (price) => `Rs. ${price}`;
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({

@@ -75,7 +75,7 @@ const AboutBookSection = () => {
                 <div className="absolute inset-y-0 left-0 w-4 bg-black/20 rounded-l-md"></div>
                 <div className="text-center space-y-3 mt-8 z-10">
                   <span className="text-amber-200/80 text-xs tracking-widest uppercase font-semibold">Our Journey</span>
-                  <h4 className="text-2xl sm:text-3xl font-serif font-bold text-[#f4ecd8]">ALFALAH</h4>
+                  <h4 className="text-2xl sm:text-3xl font-serif font-bold text-[#f4ecd8]">Alfalah Honey</h4>
                   <div className="w-12 h-0.5 bg-amber-200/40 mx-auto"></div>
                 </div>
                 <div className="text-center z-10 mb-6">
@@ -91,7 +91,7 @@ const AboutBookSection = () => {
                 {/* Brown Header Bar inside the opened book */}
                 <div className="bg-[#3c2415] px-6 py-3.5 flex items-center justify-between border-b border-[#3c2415]/80">
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-200/90">
-                    OUR JOURNEY - ALFALAH
+                    OUR JOURNEY - Alfalah Honey
                   </span>
                   <button 
                     onClick={() => setIsOpen(false)}

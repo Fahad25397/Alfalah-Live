@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import api, { getImageUrl } from '../api';
 import { Star, ShoppingCart, Loader, Search, Eye, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext';
+
 import ProductDetailModal from './ProductDetailModal';
 
 const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olives & Oils', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
@@ -18,7 +18,7 @@ const ProductGrid = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState({});
   const { addToCart } = useCart();
-  const { formatPrice } = useCurrency();
+  const formatPrice = (price) => `Rs. ${price}`;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Refs to control horizontal scrolling per category row
@@ -198,6 +198,11 @@ const ProductGrid = () => {
             <h3 onClick={() => openProductModal(p)} className="font-serif font-bold text-lg text-[#3c2415] hover:text-amber-700 transition cursor-pointer truncate">
               {p.name}
             </h3>
+            {p.urduName && (
+              <h4 dir="rtl" className="font-bold text-[15px] text-[#3c2415] opacity-90 truncate mt-0.5">
+                {p.urduName}
+              </h4>
+            )}
             <p className="text-[#3c2415]/70 text-xs mt-1.5 line-clamp-2 font-light leading-relaxed">
               {p.description}
             </p>

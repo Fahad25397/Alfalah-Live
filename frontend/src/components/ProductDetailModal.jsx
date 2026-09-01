@@ -1,13 +1,13 @@
 import React from 'react';
 import { X, Star, ShoppingCart, ShieldCheck, Heart, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext'; // <-- Added currency hook
+
 import SEO from './SEO';
 import { getImageUrl } from '../api';
 
 const ProductDetailModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
-  const { formatPrice } = useCurrency(); // <-- Initialized currency formatter
+  const formatPrice = (price) => `Rs. ${price}`;
 
   if (!product) return null;
 
@@ -89,6 +89,11 @@ const ProductDetailModal = ({ product, onClose }) => {
                 <span className="font-semibold text-amber-900">5.0 Organic Grade</span>
               </div>
               <h2 className="text-2xl font-serif font-bold text-[#3c2415]">{product.name}</h2>
+              {product.urduName && (
+                <h3 dir="rtl" className="text-xl font-bold text-[#3c2415] opacity-90 mt-1">
+                  {product.urduName}
+                </h3>
+              )}
               <div className="flex items-baseline flex-wrap gap-x-2 mt-1">
                 {displayVariant.isSale && displayVariant.oldPrice && (
                   <span className="text-lg font-bold text-gray-400 line-through">

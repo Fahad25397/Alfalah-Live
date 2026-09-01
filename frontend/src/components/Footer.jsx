@@ -13,7 +13,7 @@ const Footer = () => {
         {/* Brand & About */}
         <div className="space-y-4">
           <span className="text-2xl font-serif font-bold text-white tracking-widest block">
-            ALFALAH
+            Alfalah Honey
           </span>
           <p className="text-[#f4ecd8]/70 text-xs font-light leading-relaxed">
             Your trusted source for pure, organic honey, premium dates, traditional desi ghee, and wholesome wellness staples crafted to nourish your daily life.
@@ -112,13 +112,13 @@ const Footer = () => {
           Return Policy
         </h4>
         <p className="text-[#f4ecd8]/80 text-xs md:text-sm font-light leading-relaxed max-w-4xl mx-auto">
-          At Alfalah, we believe in complete transparency and absolute customer satisfaction. To ensure you receive exactly what you ordered in perfect condition, we offer a unique "Open-Door" Verification Policy at the time of delivery. When your parcel arrives, you can open and inspect it on the spot while our rider records a quick verification video. If you love the product, it’s yours; if it doesn't meet your expectations, simply return it back to the rider immediately—no questions asked.
+          At Alfalah Honey, we believe in complete transparency and absolute customer satisfaction. To ensure you receive exactly what you ordered in perfect condition, we offer a unique "Open-Door" Verification Policy at the time of delivery. When your parcel arrives, you can open and inspect it on the spot while our rider records a quick verification video. If you love the product, it’s yours; if it doesn't meet your expectations, simply return it back to the rider immediately—no questions asked.
         </p>
       </div>
 
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-light text-[#f4ecd8]/60">
-        <p>© {new Date().getFullYear()} ALFALAH. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Alfalah Honey. All rights reserved.</p>
 
         <button
           onClick={scrollToTop}

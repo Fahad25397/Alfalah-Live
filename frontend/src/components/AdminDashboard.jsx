@@ -10,12 +10,7 @@ import imageCompression from 'browser-image-compression';
 
 const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olives & Oils', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
 
-const DEFAULT_CURRENCIES = {
-  PKR: { label: 'PKR (₨)', symbol: '₨ ', rate: 1 },
-  USD: { label: 'USD ($)', symbol: '$', rate: 0.0036 },
-  AED: { label: 'AED', symbol: 'AED ', rate: 0.013 },
-  SAR: { label: 'SAR', symbol: 'SAR ', rate: 0.0135 },
-};
+
 
 const AdminDashboard = ({ onBackToShop }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,13 +34,7 @@ const AdminDashboard = ({ onBackToShop }) => {
   // Search and status filter for orders
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState('All');
-
-  // Manual Currency Exchange Rates State
-  const [currencies, setCurrencies] = useState(() => {
-    const saved = localStorage.getItem('admin_currency_rates');
-    return saved ? JSON.parse(saved) : DEFAULT_CURRENCIES;
-  });
-  const [successCurrencyMsg, setSuccessCurrencyMsg] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState('');
 
   // Revenue Analytics State
   const [allOrdersForRevenue, setAllOrdersForRevenue] = useState([]);
@@ -60,6 +49,7 @@ const AdminDashboard = ({ onBackToShop }) => {
   
   const [productForm, setProductForm] = useState({
     name: '',
+    urduName: '',
     category: 'Honey',
     image: '',
     description: '',
@@ -202,23 +192,7 @@ const AdminDashboard = ({ onBackToShop }) => {
     }));
   }, [allOrdersForRevenue]);
 
-  const handleCurrencyRateChange = (code, value) => {
-    setCurrencies(prev => ({
-      ...prev,
-      [code]: {
-        ...prev[code],
-        rate: parseFloat(value) || 0
-      }
-    }));
-  };
 
-  const handleSaveCurrencies = (e) => {
-    e.preventDefault();
-    localStorage.setItem('admin_currency_rates', JSON.stringify(currencies));
-    setSuccessCurrencyMsg(true);
-    showToast('Currency exchange rates saved globally!');
-    setTimeout(() => setSuccessCurrencyMsg(false), 3000);
-  };
 
   const handleStatusChange = async (orderId, newStatus) => {
     setActionLoading(true);
@@ -256,6 +230,7 @@ const AdminDashboard = ({ onBackToShop }) => {
     setPasteNotice('');
     setProductForm({ 
       name: '', 
+      urduName: '',
       category: 'Honey', 
       image: '', 
       imageFile: null,
@@ -300,6 +275,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
     setProductForm({
       name: product.name,
+      urduName: product.urduName || '',
       category: matchedCategory,
       image: product.image,
       imageFile: null,
@@ -448,6 +424,7 @@ const AdminDashboard = ({ onBackToShop }) => {
 
       const formData = new FormData();
       formData.append('name', productForm.name);
+      formData.append('urduName', productForm.urduName || '');
       formData.append('category', productForm.category);
       formData.append('description', productForm.description);
       formData.append('order', productForm.order);
@@ -619,16 +596,7 @@ const AdminDashboard = ({ onBackToShop }) => {
         >
           <Package size={18} /> Product Inventory ({products.length})
         </button>
-        <button
-          onClick={() => setActiveTab('currencies')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
-            activeTab === 'currencies'
-              ? 'bg-[#3c2415] text-amber-100 shadow-md'
-              : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-100'
-          }`}
-        >
-          <Settings size={18} /> Currency Rates
-        </button>
+
         <button
           onClick={() => setActiveTab('revenue')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
@@ -831,51 +799,7 @@ const AdminDashboard = ({ onBackToShop }) => {
             </div>
           )}
         </div>
-      ) : activeTab === 'currencies' ? (
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-amber-200 shadow-sm max-w-2xl mx-auto">
-          <div className="mb-6">
-            <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#3c2415]">Manual Global Currency Settings</h3>
-            <p className="text-xs text-amber-900/70 mt-1">
-              Define exact fixed conversion values relative to PKR (Base: ₨1). Once saved here, all product cards and prices update automatically across the storefront.
-            </p>
-          </div>
 
-          {successCurrencyMsg && (
-            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold">
-              ✓ Currency rates saved and applied globally to the storefront!
-            </div>
-          )}
-
-          <form onSubmit={handleSaveCurrencies} className="space-y-4">
-            {Object.entries(currencies).map(([code, data]) => (
-              <div key={code} className="flex items-center justify-between gap-4 p-4 bg-[#faf8f5] rounded-2xl border border-amber-100">
-                <div>
-                  <span className="font-serif font-bold text-[#3c2415] block">{data.label}</span>
-                  <span className="text-[10px] text-amber-900/60">Symbol: {data.symbol}</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-amber-900/60">1 PKR =</span>
-                  <input
-                    type="number"
-                    step="any"
-                    value={data.rate}
-                    onChange={(e) => handleCurrencyRateChange(code, e.target.value)}
-                    disabled={code === 'PKR'}
-                    className={`w-32 px-3 py-2 bg-white rounded-xl border border-amber-200 text-xs font-medium text-[#3c2415] focus:outline-none focus:ring-2 focus:ring-[#3c2415] ${code === 'PKR' ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  />
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="submit"
-              className="w-full mt-6 py-3.5 bg-[#3c2415] hover:bg-[#2b1c12] text-amber-100 rounded-2xl transition flex items-center justify-center gap-2 text-xs font-semibold shadow-md cursor-pointer"
-            >
-              <Save size={16} /> Save & Apply Globally
-            </button>
-          </form>
-        </div>
       ) : activeTab === 'revenue' ? (
         <div className="bg-white/70 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-black/10 shadow-sm max-w-5xl mx-auto">
           <div className="mb-6">
@@ -942,23 +866,54 @@ const AdminDashboard = ({ onBackToShop }) => {
       ) : (
         /* PRODUCT INVENTORY TAB */
         <div>
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 className="text-xl font-bold text-[#3c2415]">All Store Products</h3>
-            <button
-              onClick={handleOpenAddModal}
-              className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs sm:text-sm transition cursor-pointer shadow-md"
-            >
-              <Plus size={18} /> Add New Item
-            </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              {/* Product Search Input */}
+              <div className="flex-1 sm:w-64 flex items-center bg-white border border-amber-200 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-amber-500 shadow-sm">
+                <Search size={16} className="text-amber-700 mr-2 flex-shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search products by name..."
+                  value={productSearchQuery}
+                  onChange={(e) => setProductSearchQuery(e.target.value)}
+                  className="w-full text-xs sm:text-sm focus:outline-none bg-transparent text-[#3c2415]"
+                />
+                {productSearchQuery && (
+                  <button 
+                    onClick={() => setProductSearchQuery('')} 
+                    className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer ml-1"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={handleOpenAddModal}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs sm:text-sm transition cursor-pointer shadow-md flex-shrink-0"
+              >
+                <Plus size={18} /> Add New Item
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((p) => (
+            {products.filter(p => p.name.toLowerCase().includes(productSearchQuery.toLowerCase())).length === 0 ? (
+              <div className="col-span-full text-center py-12 bg-white rounded-2xl border border-amber-100 shadow-sm">
+                <Package size={48} className="mx-auto text-amber-300 mb-3" />
+                <h3 className="text-lg font-bold text-[#3c2415]">No products found</h3>
+                <p className="text-xs text-gray-500 mt-1">No products match your search.</p>
+              </div>
+            ) : (
+              products.filter(p => p.name.toLowerCase().includes(productSearchQuery.toLowerCase())).map((p) => (
               <div key={p._id} className="bg-white rounded-2xl p-4 border border-amber-100 shadow-md flex gap-4 hover:border-amber-300 transition">
                 <img src={getImageUrl(p.image, 200)} alt={p.name} loading="lazy" decoding="async" width="96" height="96" className="w-24 h-24 object-cover rounded-xl border border-amber-100 flex-shrink-0 bg-amber-50" />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h4 className="font-bold text-[#3c2415] line-clamp-1">{p.name}</h4>
+                    {p.urduName && (
+                      <h5 dir="rtl" className="font-bold text-[13px] text-[#3c2415] opacity-90 mt-0.5">{p.urduName}</h5>
+                    )}
                     <span className="inline-block text-[11px] text-amber-900 font-bold bg-amber-100 px-2 py-0.5 rounded mt-1">
                       {p.category || 'Honey'}
                     </span>
@@ -1001,7 +956,7 @@ const AdminDashboard = ({ onBackToShop }) => {
                   </div>
                 </div>
               </div>
-            ))}
+            )))}
           </div>
 
           {/* Pagination Controls for Products */}
@@ -1051,16 +1006,29 @@ const AdminDashboard = ({ onBackToShop }) => {
             </p>
 
             <form onSubmit={handleSaveProduct} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Product Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={productForm.name}
-                  onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                  placeholder="e.g. Pure Sidr Honey"
-                  className="w-full px-4 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Product Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={productForm.name}
+                    onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                    placeholder="e.g. Pure Sidr Honey"
+                    className="w-full px-4 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Urdu Name</label>
+                  <input 
+                    type="text" 
+                    dir="rtl"
+                    value={productForm.urduName || ''}
+                    onChange={(e) => setProductForm({ ...productForm, urduName: e.target.value })}
+                    placeholder="e.g. خالص بیری کا شہد"
+                    className="w-full px-4 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
               </div>
 
               <div>
