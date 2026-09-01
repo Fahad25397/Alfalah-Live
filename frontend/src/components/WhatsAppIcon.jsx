@@ -2,7 +2,7 @@ import React from 'react';
 
 const WhatsAppIcon = () => {
   const phoneNumber = '923331010640'; // Pakistani number format
-  const message = `Thank you for contacting Alfalah Honey. 👋We appreciate your interest in our natural, hive-to-bottle products. A member of our team will be with you shortly to assist with your inquiry.In the meantime, please let us know how we can help: 1. Product specifications & sourcing details• Wholesale and corporate gifting• Assistance with an existing orderYou may also browse our full collection here`;
+  const message = `Hello! I am on the Alfalah Honey website and have a few questions about ordering your honey. Are you available to help?`;
   
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;

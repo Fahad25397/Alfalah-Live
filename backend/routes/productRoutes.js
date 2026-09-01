@@ -12,7 +12,8 @@ router.get('/', async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    let query = Product.find().sort({ createdAt: -1 });
+    // Sort by display order (ascending) first, then by creation date
+    let query = Product.find().sort({ order: 1, createdAt: -1 });
     
     if (limit > 0) {
       query = query.skip(skip).limit(limit);
@@ -42,7 +43,7 @@ router.get('/', async (req, res) => {
 // POST /api/products - Add a new product (Protected)
 router.post('/', protectAdmin, upload, async (req, res) => {
   try {
-    const { name, category, description, image } = req.body;
+    const { name, category, description, image, order } = req.body;
     let variants = req.body.variants;
 
     // Parse variants if they come in as a JSON string (from FormData)
@@ -68,7 +69,7 @@ router.post('/', protectAdmin, upload, async (req, res) => {
       return res.status(400).json({ message: 'Image is required' });
     }
 
-    const newProduct = new Product({ name, category, description, image: imageUrl, variants });
+    const newProduct = new Product({ name, category, description, image: imageUrl, variants, order: order ? parseInt(order) : 0 });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {

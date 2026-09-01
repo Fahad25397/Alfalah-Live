@@ -13,6 +13,7 @@ const productSchema = new mongoose.Schema({
   description: { type: String, required: true },
   category: { type: String, required: true },
   image: { type: String, required: true },
+  order: { type: Number, default: 0 }, // Order in which products are displayed
   variants: [variantSchema] // Stores multiple weight & price options
 }, { timestamps: true });
 

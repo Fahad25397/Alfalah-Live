@@ -23,7 +23,7 @@ const ContactUs = () => {
   return (
     <section id="contact" className="py-20 px-6 lg:px-16 bg-[#faf8f5] relative overflow-hidden border-t border-amber-200/60 scroll-mt-24">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Section Header */}
         <div className="bg-[#3c2415] backdrop-blur-md px-6 py-4 rounded-3xl border border-[#3c2415]/80 shadow-md flex items-center justify-between mb-12">
           <div className="flex items-center gap-3">
@@ -48,14 +48,14 @@ const ContactUs = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
             <div className="bg-[#f5eaba] p-6 rounded-3xl border border-amber-200/80 shadow-sm flex flex-col items-center text-center space-y-3">
               <div className="p-3 rounded-2xl bg-[#3c2415] text-amber-200 shadow-md">
                 <MapPin size={22} />
               </div>
               <h4 className="font-serif font-bold text-[#3c2415] text-lg">Our Location</h4>
               <p className="text-[#3c2415]/70 text-sm font-light">
-                Main Bazaar, Alfalah Storefront Headquarters
+                Alfalah Honey Opposite to Salman Bakers near Sweet Cream , Gulabahr,Peshawar.
               </p>
             </div>
 
@@ -65,7 +65,7 @@ const ContactUs = () => {
               </div>
               <h4 className="font-serif font-bold text-[#3c2415] text-lg">Phone Support</h4>
               <p className="text-[#3c2415]/70 text-sm font-light">
-                +00 966 55 228 2515
+                03331010640
               </p>
             </div>
 
@@ -75,7 +75,27 @@ const ContactUs = () => {
               </div>
               <h4 className="font-serif font-bold text-[#3c2415] text-lg">Email Us</h4>
               <p className="text-[#3c2415]/70 text-sm font-light">
-                support@alfalah.com
+                alfalahhoney2@gmail.com
+              </p>
+            </div>
+            <div className="bg-[#f5eaba] p-6 rounded-3xl border border-amber-200/80 shadow-sm flex flex-col items-center text-center space-y-3">
+              <div className="flex gap-3">
+                <a href="https://www.instagram.com/alfalah_honey_gulbahar?utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-3 rounded-2xl bg-[#3c2415] text-amber-200 shadow-md hover:bg-[#4d301c] transition-colors" aria-label="Instagram">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                  </svg>
+                </a>
+                <a href="https://www.facebook.com/share/1M7PpHWra6/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="p-3 rounded-2xl bg-[#3c2415] text-amber-200 shadow-md hover:bg-[#4d301c] transition-colors" aria-label="Facebook">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                  </svg>
+                </a>
+              </div>
+              <h4 className="font-serif font-bold text-[#3c2415] text-lg">Social Media</h4>
+              <p className="text-[#3c2415]/70 text-sm font-light">
+                Follow us online
               </p>
             </div>
           </div>

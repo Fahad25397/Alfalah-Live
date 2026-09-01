@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import Navbar from './Navbar';
+import { getImageUrl } from '../api';
 
 const slides = [
   {
@@ -74,8 +75,12 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
                 }`}
               >
                 <img 
-                  src={slide.image} 
+                  src={getImageUrl(slide.image, 1600)} 
                   alt={slide.title} 
+                  loading="eager"
+                  decoding="async"
+                  width="1600"
+                  height="900"
                   className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${
                     isActive ? 'scale-105' : 'scale-100'
                   }`}

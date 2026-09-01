@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import ProductDetailModal from './ProductDetailModal';
 
-const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
+const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olives & Oils', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
@@ -92,7 +92,7 @@ const ProductGrid = () => {
     if (tCat === 'desi ghee' && (pCat.includes('ghee') || pCat.includes('desi'))) return true;
     if (tCat === 'zamzam water' && (pCat.includes('zamzam') || pCat.includes('water'))) return true;
     if (tCat === 'jam' && pCat.includes('jam')) return true;
-    if (tCat === 'olive oil' && pCat.includes('olive')) return true;
+    if (tCat === 'olives & oils' && pCat.includes('olive')) return true;
     if (tCat === 'dates' && pCat.includes('date')) return true;
     if (tCat === 'honey' && pCat.includes('honey')) return true;
     if (tCat === 'dry fruits' && (pCat.includes('dry') || pCat.includes('fruit') || pCat.includes('pistachio') || pCat.includes('almond') || pCat.includes('cashew'))) return true;
@@ -120,7 +120,15 @@ const ProductGrid = () => {
 
         if (sortBy === 'low-to-high') return priceA - priceB;
         if (sortBy === 'high-to-low') return priceB - priceA;
-        return 0;
+        
+        // Custom sort for 'featured' (default)
+        const orderA = (a.order === 0 || a.order == null) ? 9999 : a.order;
+        const orderB = (b.order === 0 || b.order == null) ? 9999 : b.order;
+        
+        if (orderA !== orderB) return orderA - orderB;
+        
+        // Fallback to newest first if orders are same
+        return new Date(b.createdAt) - new Date(a.createdAt);
       });
   };
 
@@ -157,7 +165,7 @@ const ProductGrid = () => {
       >
         <div>
           <div className="relative h-60 overflow-hidden bg-amber-50">
-            <img src={getImageUrl(p.image)} alt={p.name} loading="lazy" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer ${currentVariant.outOfStock ? 'opacity-50 grayscale' : ''}`} onClick={() => openProductModal(p)} />
+            <img src={getImageUrl(p.image, 400)} alt={p.name} loading="lazy" decoding="async" width="310" height="240" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer ${currentVariant.outOfStock ? 'opacity-50 grayscale' : ''}`} onClick={() => openProductModal(p)} />
             
             {currentVariant.outOfStock ? (
               <span className="absolute top-4 right-4 bg-gray-800 text-white font-bold text-xs px-3 py-1 rounded-full shadow-md z-10 pointer-events-none">

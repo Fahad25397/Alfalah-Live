@@ -54,8 +54,12 @@ const CartDrawer = () => {
                     className="flex items-center gap-4 p-4 bg-[#f5eaba] backdrop-blur-sm rounded-2xl border border-amber-200/60 shadow-sm"
                   >
                     <img 
-                      src={getImageUrl(item.image)} 
+                      src={getImageUrl(item.image, 200)} 
                       alt={item.name} 
+                      loading="lazy"
+                      decoding="async"
+                      width="64"
+                      height="64"
                       className="w-16 h-16 object-cover rounded-xl border border-amber-200/60 bg-white" 
                     />
                     <div className="flex-1">

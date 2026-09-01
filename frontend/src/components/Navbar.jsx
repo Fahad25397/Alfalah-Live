@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 const Navbar = () => {
   const { currentCurrency, setCurrentCurrency, currencies } = useCurrency();
   const { setIsCartOpen, totalItems } = useCart();
-  
+
   // State to track which navigation pill is currently active
   const [activeTab, setActiveTab] = useState('Home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -16,12 +16,13 @@ const Navbar = () => {
     { name: 'Shop', href: '#products' },
     { name: 'About', href: '#about' },
     { name: 'Contact', href: '#contact' },
+    { name: 'Return Policy', href: '#return-policy' },
   ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#EDC001]/95 backdrop-blur-md border-b border-amber-400/40 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-16 py-4">
-        
+
         {/* Brand Title */}
         <div className="flex items-center gap-3">
           <span className="text-xl lg:text-2xl font-serif font-bold text-[#3c2415] tracking-widest">
@@ -38,11 +39,10 @@ const Navbar = () => {
                 key={item.name}
                 href={item.href}
                 onClick={() => setActiveTab(item.name)}
-                className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-colors duration-500 ${
-                  isActive
-                    ? 'text-[#f4ecd8]'
-                    : 'text-[#3c2415]/90 hover:text-[#3c2415]'
-                }`}
+                className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-colors duration-500 ${isActive
+                  ? 'text-[#f4ecd8]'
+                  : 'text-[#3c2415]/90 hover:text-[#3c2415]'
+                  }`}
               >
                 {isActive && (
                   <span className="absolute inset-0 bg-[#3c2415] rounded-full -z-10 shadow-md transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] animate-in fade-in zoom-in-95" />
@@ -55,7 +55,7 @@ const Navbar = () => {
 
         {/* Right Actions - Currency Dropdown, Cart Button & Mobile Menu Toggle */}
         <div className="flex items-center gap-2 sm:gap-4">
-          
+
           {/* Currency Selector (Always Visible on all screen sizes) */}
           <div className="flex items-center gap-1.5 bg-[#f7d648]/80 border border-amber-400/60 px-2.5 sm:px-3 py-2 rounded-full text-xs font-medium text-[#3c2415] shadow-xs backdrop-blur-sm">
             <Globe size={13} className="text-[#3c2415]/70 flex-shrink-0" />
@@ -73,7 +73,7 @@ const Navbar = () => {
           </div>
 
           {/* Cart Button */}
-          <button 
+          <button
             onClick={() => setIsCartOpen(true)}
             className="flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-full bg-[#3c2415]/95 hover:bg-[#3c2415] text-[#f4ecd8] font-medium transition cursor-pointer shadow-md text-xs active:scale-95 backdrop-blur-sm relative"
           >
@@ -114,11 +114,10 @@ const Navbar = () => {
                     setActiveTab(item.name);
                     setIsMobileMenuOpen(false);
                   }}
-                  className={`px-5 py-3 rounded-xl text-sm font-medium transition ${
-                    isActive
-                      ? 'bg-[#3c2415] text-[#f4ecd8] shadow-sm'
-                      : 'bg-[#f7d648] text-[#3c2415] shadow-xs hover:bg-[#f5eaba]'
-                  }`}
+                  className={`px-5 py-3 rounded-xl text-sm font-medium transition ${isActive
+                    ? 'bg-[#3c2415] text-[#f4ecd8] shadow-sm'
+                    : 'bg-[#f7d648] text-[#3c2415] shadow-xs hover:bg-[#f5eaba]'
+                    }`}
                 >
                   {item.name}
                 </a>

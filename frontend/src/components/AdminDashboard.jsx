@@ -8,7 +8,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import imageCompression from 'browser-image-compression';
 
-const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olive Oil', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
+const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olives & Oils', 'Dates', 'Jam', 'Desi Ghee', 'Daily Wellness'];
 
 const DEFAULT_CURRENCIES = {
   PKR: { label: 'PKR (₨)', symbol: '₨ ', rate: 1 },
@@ -63,6 +63,7 @@ const AdminDashboard = ({ onBackToShop }) => {
     category: 'Honey',
     image: '',
     description: '',
+    order: 0,
     variants: [
       { weight: '500g', price: '', isSale: false, oldPrice: '', outOfStock: false },
       { weight: '1000g', price: '', isSale: false, oldPrice: '', outOfStock: false }
@@ -259,6 +260,7 @@ const AdminDashboard = ({ onBackToShop }) => {
       image: '', 
       imageFile: null,
       description: '', 
+      order: 0,
       variants: [
         { weight: '500g', price: '', isSale: false, oldPrice: '', outOfStock: false },
         { weight: '1000g', price: '', isSale: false, oldPrice: '', outOfStock: false }
@@ -274,7 +276,7 @@ const AdminDashboard = ({ onBackToShop }) => {
     const matchedCategory = CATEGORIES.find(
       (cat) => {
         const pCat = (product.category || '').trim().toLowerCase();
-        if (pCat === 'olives' && cat === 'Olive Oil') return true;
+        if (pCat === 'olives' && cat === 'Olives & Oils') return true;
         if (pCat === 'dryfruits' && cat === 'Dry Fruits') return true;
         return cat.toLowerCase() === pCat;
       }
@@ -302,6 +304,7 @@ const AdminDashboard = ({ onBackToShop }) => {
       image: product.image,
       imageFile: null,
       description: product.description,
+      order: product.order || 0,
       variants: formattedVariants,
     });
     setIsModalOpen(true);
@@ -447,6 +450,7 @@ const AdminDashboard = ({ onBackToShop }) => {
       formData.append('name', productForm.name);
       formData.append('category', productForm.category);
       formData.append('description', productForm.description);
+      formData.append('order', productForm.order);
       formData.append('variants', JSON.stringify(productForm.variants.map(v => ({
         weight: v.weight,
         price: Number(v.price),
@@ -951,12 +955,15 @@ const AdminDashboard = ({ onBackToShop }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((p) => (
               <div key={p._id} className="bg-white rounded-2xl p-4 border border-amber-100 shadow-md flex gap-4 hover:border-amber-300 transition">
-                <img src={getImageUrl(p.image)} alt={p.name} className="w-24 h-24 object-cover rounded-xl border border-amber-100 flex-shrink-0 bg-amber-50" />
+                <img src={getImageUrl(p.image, 200)} alt={p.name} loading="lazy" decoding="async" width="96" height="96" className="w-24 h-24 object-cover rounded-xl border border-amber-100 flex-shrink-0 bg-amber-50" />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h4 className="font-bold text-[#3c2415] line-clamp-1">{p.name}</h4>
                     <span className="inline-block text-[11px] text-amber-900 font-bold bg-amber-100 px-2 py-0.5 rounded mt-1">
                       {p.category || 'Honey'}
+                    </span>
+                    <span className="inline-block text-[11px] text-blue-900 font-bold bg-blue-100 px-2 py-0.5 rounded mt-1 ml-2">
+                      Order: {p.order || 0}
                     </span>
                     
                     <div className="mt-2 text-xs space-y-0.5">
@@ -1069,6 +1076,18 @@ const AdminDashboard = ({ onBackToShop }) => {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Display Order</label>
+                <input 
+                  type="number" 
+                  value={productForm.order}
+                  onChange={(e) => setProductForm({ ...productForm, order: Number(e.target.value) })}
+                  placeholder="e.g. 1 (Smaller numbers appear first)"
+                  className="w-full px-4 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+                <p className="text-[10px] text-gray-500 mt-1">Products with smaller order numbers (e.g. 1, 2) will be displayed first. Leave as 0 to push to the end.</p>
+              </div>
+
               {/* IMAGE SECTION WITH BROWSER PASTE & DROPZONE */}
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -1132,8 +1151,12 @@ const AdminDashboard = ({ onBackToShop }) => {
                     <div className="flex items-center gap-4 p-3 bg-amber-50/60 rounded-xl border border-amber-200">
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-amber-300 bg-white flex-shrink-0">
                         <img 
-                          src={getImageUrl(productForm.image)} 
+                          src={getImageUrl(productForm.image, 200)} 
                           alt="Preview" 
+                          loading="lazy"
+                          decoding="async"
+                          width="80"
+                          height="80"
                           className="w-full h-full object-cover" 
                         />
                       </div>

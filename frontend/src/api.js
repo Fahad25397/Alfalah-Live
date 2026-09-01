@@ -37,15 +37,38 @@ export const apiRequest = async (config) => {
   }
 };
 
-export const getImageUrl = (imagePath) => {
+export const getImageUrl = (imagePath, requestedWidth = null) => {
   if (!imagePath) return '';
-  if (imagePath.startsWith('http') || imagePath.startsWith('data:') || imagePath.startsWith('blob:')) {
-    return imagePath;
+
+  let sourceUrl = imagePath;
+
+  if (!imagePath.startsWith('http') && !imagePath.startsWith('data:') && !imagePath.startsWith('blob:')) {
+    // Fallback to localhost:5000 or the production backend URL
+    const fallbackUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://backend-beige-kappa-75.vercel.app';
+    const customBase = (import.meta.env.VITE_API_URL || fallbackUrl).replace(/\/$/, '');
+    sourceUrl = `${customBase}${imagePath}`;
   }
-  // Fallback to localhost:5000 or the production backend URL
-  const fallbackUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://backend-beige-kappa-75.vercel.app';
-  const customBase = (import.meta.env.VITE_API_URL || fallbackUrl).replace(/\/$/, '');
-  return `${customBase}${imagePath}`;
+
+  // If local dev or blob/data, don't use Cloudinary fetch
+  if (sourceUrl.includes('localhost') || sourceUrl.startsWith('data:') || sourceUrl.startsWith('blob:')) {
+    return sourceUrl;
+  }
+
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  
+  if (cloudName) {
+    let transformations = 'f_auto,q_auto';
+    
+    if (requestedWidth) {
+      // Bounded Responsive Steps (200px increments)
+      const roundedWidth = Math.ceil(requestedWidth / 200) * 200;
+      transformations += `,w_${roundedWidth}`;
+    }
+    
+    return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformations}/${sourceUrl}`;
+  }
+
+  return sourceUrl;
 };
 
 export const api = {

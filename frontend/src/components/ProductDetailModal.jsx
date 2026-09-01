@@ -41,7 +41,7 @@ const ProductDetailModal = ({ product, onClose }) => {
         image={getImageUrl(product.image)}
         schema={productSchema}
       />
-      <div className="bg-[#fffdfa] w-full max-w-2xl rounded-3xl shadow-2xl border border-amber-900/20 overflow-hidden relative p-6 md:p-8">
+      <div className="bg-[#fffdfa] w-full max-w-2xl max-h-[95vh] overflow-y-auto custom-scrollbar rounded-3xl shadow-2xl border border-amber-900/20 relative p-6 md:p-8">
         
         {/* Close Button */}
         <button 
@@ -55,8 +55,12 @@ const ProductDetailModal = ({ product, onClose }) => {
           {/* Image Column */}
           <div className="relative rounded-2xl overflow-hidden bg-amber-50 h-64 md:h-80 border border-amber-100">
             <img 
-              src={getImageUrl(product.image)} 
-              alt={product.name} 
+              src={getImageUrl(product.image, 800)} 
+              alt={product.name}
+              loading="eager"
+              decoding="async"
+              width="800"
+              height="800"
               className={`w-full h-full object-cover ${displayVariant.outOfStock ? 'opacity-50 grayscale' : ''}`}
             />
             
@@ -97,9 +101,11 @@ const ProductDetailModal = ({ product, onClose }) => {
               </div>
             </div>
 
-            <p className="text-amber-900/80 text-sm leading-relaxed">
-              {product.description}
-            </p>
+            <div className="max-h-40 md:max-h-52 overflow-y-auto pr-2 custom-scrollbar">
+              <p className="text-amber-900/80 text-sm leading-relaxed whitespace-pre-wrap">
+                {product.description}
+              </p>
+            </div>
 
             {/* Highlights */}
             <div className="space-y-2 py-3 border-y border-amber-100 text-xs text-amber-950">
