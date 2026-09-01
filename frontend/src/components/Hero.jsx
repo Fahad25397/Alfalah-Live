@@ -33,6 +33,21 @@ const slides = [
     title: "Olive Heritage",
     description: "Traditional olive goodness blended with quality and natural nourishment. Sustainably sourced from the Mediterranean, this premium olive oil is rich in antioxidants and heart-healthy fats to support your overall wellness.",
     image: "https://i.pinimg.com/736x/9e/ae/cf/9eaecf78abe35db4fb23819bb7248064.jpg"
+  },
+  {
+    title: "Dry Fruits",
+    description: "Nature's premium treasures: crunchy almonds, creamy cashews, and rich walnuts, crafted perfectly for your wholesome, aesthetic snacking moments.",
+    image: "https://i.pinimg.com/1200x/25/46/7d/25467d0bde67cb1c5171a1f7aa85e72b.jpg"
+  },
+  {
+    title: "Shilajit",
+    description: "Pure, potent Ayurvedic resin: raw Himalayan shilajit, packed with fulvic acid to naturally elevate your daily energy, vitality, and aesthetic wellness routine.",
+    image: "https://i.pinimg.com/1200x/21/55/0b/21550b3e3ca539560f6963f6edf38332.jpg"
+  },
+  {
+    title: "Saffron",
+    description: "Crimson threads of luxury: pure, handpicked royal saffron, releasing a golden glow and rich aroma for ultimate wellness excellence.",
+    image: "https://i.pinimg.com/1200x/7b/32/8b/7b328bdced1ff3db6faacf23d9a3445b.jpg"
   }
 ];
 
@@ -62,28 +77,26 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
 
       {/* Hero Box Container */}
       <div className="mx-2 sm:mx-3 mt-2 md:mt-4 relative w-[calc(100%-1rem)] sm:w-[calc(100%-1.5rem)] min-h-[85vh] bg-[#221a15] text-white flex flex-col justify-between overflow-hidden rounded-[2.5rem] shadow-xl">
-        
+
         {/* Full-Width Sliding Image Track Background with Soft Crossfade & Ken Burns Zoom */}
         <div className="absolute inset-0 z-0 overflow-hidden rounded-[2.5rem]">
           {slides.map((slide, idx) => {
             const isActive = currentSlide === idx;
             return (
-              <div 
+              <div
                 key={idx}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-                }`}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
               >
-                <img 
-                  src={getImageUrl(slide.image, 1600)} 
-                  alt={slide.title} 
+                <img
+                  src={getImageUrl(slide.image, 1600)}
+                  alt={slide.title}
                   loading="eager"
                   decoding="async"
                   width="1600"
                   height="900"
-                  className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${
-                    isActive ? 'scale-105' : 'scale-100'
-                  }`}
+                  className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${isActive ? 'scale-105' : 'scale-100'
+                    }`}
                 />
                 {/* Balanced dark gradient overlay to ensure white text remains crisp and readable */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
@@ -95,20 +108,20 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
         {/* Hero Content Layer with Gentle Fade & Upward Drift */}
         <div className="relative z-20 max-w-7xl mx-auto w-full px-6 lg:px-12 pt-28 pb-20 mt-auto flex items-center">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
-            
+
             <div className="lg:col-span-8 xl:col-span-7 space-y-6 text-left">
               <div key={currentSlide} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards">
                 <h1 className="text-4xl sm:text-6xl font-serif font-normal text-white tracking-wide leading-tight drop-shadow-md">
                   {slides[currentSlide].title}
                 </h1>
-                
+
                 <p className="text-white/90 text-base sm:text-lg max-w-xl font-light leading-relaxed drop-shadow-sm">
                   {slides[currentSlide].description}
                 </p>
               </div>
-              
+
               <div className="pt-4 flex items-center gap-4">
-                <a 
+                <a
                   href="#products"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-white/90 text-[#3c2415] font-medium rounded-2xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer shadow-md"
                 >
@@ -123,28 +136,27 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
         {/* Slide Navigation Controls */}
         <div className="relative z-30 max-w-7xl mx-auto w-full px-6 lg:px-12 pb-10 flex justify-end">
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={prevSlide}
               aria-label="Previous Slide"
               className="p-3 rounded-full bg-black/40 hover:bg-black/60 text-white transition backdrop-blur-md cursor-pointer border border-white/25 active:scale-95 shadow-xs"
             >
               <ChevronLeft size={18} />
             </button>
-            
+
             <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/25 shadow-xs">
               {slides.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-1.5 rounded-full transition-all duration-500 cursor-pointer ${
-                    currentSlide === idx ? 'bg-white w-6' : 'bg-white/40 w-1.5'
-                  }`}
+                  className={`h-1.5 rounded-full transition-all duration-500 cursor-pointer ${currentSlide === idx ? 'bg-white w-6' : 'bg-white/40 w-1.5'
+                    }`}
                 />
               ))}
             </div>
 
-            <button 
+            <button
               onClick={nextSlide}
               aria-label="Next Slide"
               className="p-3 rounded-full bg-black/40 hover:bg-black/60 text-white transition backdrop-blur-md cursor-pointer border border-white/25 active:scale-95 shadow-xs"
