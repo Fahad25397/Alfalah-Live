@@ -53,10 +53,14 @@ app.get('/health', (req, res) => {
 });
 
 // Register API Routes (support both /api/* and direct /* prefix for flexible serverless rewrites)
+app.use('/api/admin', require('../backend/routes/adminRoutes'));
+app.use('/admin', require('../backend/routes/adminRoutes'));
 app.use('/api/products', require('../backend/routes/productRoutes'));
 app.use('/products', require('../backend/routes/productRoutes'));
 app.use('/api/orders', require('../backend/routes/orderRoutes'));
 app.use('/orders', require('../backend/routes/orderRoutes'));
+app.use('/api/seo', require('../backend/routes/seoRoutes'));
+app.use('/seo', require('../backend/routes/seoRoutes'));
 
 // For local testing outside serverless
 if (process.env.NODE_ENV !== 'production' && require.main === module) {
