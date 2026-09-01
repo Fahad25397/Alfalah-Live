@@ -18,7 +18,7 @@ const ProductGrid = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState({});
   const { addToCart } = useCart();
-  const formatPrice = (price) => `Rs. ${price}`;
+  const formatPrice = (price) => `Rs. ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Refs to control horizontal scrolling per category row

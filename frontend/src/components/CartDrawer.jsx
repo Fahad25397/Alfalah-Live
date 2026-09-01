@@ -7,7 +7,7 @@ import { getImageUrl } from '../api';
 
 const CartDrawer = () => {
   const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, totalPrice } = useCart();
-  const formatPrice = (price) => `Rs. ${price}`;
+  const formatPrice = (price) => `Rs. ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   if (!isCartOpen) return null;

@@ -7,7 +7,7 @@ import { getImageUrl } from '../api';
 
 const ProductDetailModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
-  const formatPrice = (price) => `Rs. ${price}`;
+  const formatPrice = (price) => `Rs. ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
   if (!product) return null;
 

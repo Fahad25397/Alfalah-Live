@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 
 const CheckoutModal = ({ isOpen, onClose }) => {
   const { cart, totalPrice, clearCart, setIsCartOpen } = useCart();
-  const formatPrice = (price) => `Rs. ${price}`;
+  const formatPrice = (price) => `Rs. ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
