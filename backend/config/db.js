@@ -11,7 +11,7 @@ const connectDB = async () => {
     return cached.conn;
   }
 
-  const uri = process.env.MONGO_URI;
+  const uri = process.env.MONGO_URI || 'mongodb+srv://fahad125397_db_user:AtxGxHQfBKKAN5OT@cluster0.i4zngyg.mongodb.net/alfalah_honey?retryWrites=true&w=majority';
   if (!uri) {
     console.warn('MongoDB Warning: MONGO_URI is not defined in environment variables');
     return null;
