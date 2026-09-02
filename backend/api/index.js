@@ -17,6 +17,7 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
   crossOriginOpenerPolicy: false,
   crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false,
 }));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -30,8 +31,34 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
-// Enable CORS for all routes (since we removed withCredentials, a wildcard * works perfectly)
-app.use(cors({ optionsSuccessStatus: 200 }));
+// CORS — explicitly allow the frontend origin and handle preflight
+const allowedOrigins = [
+  'https://alfalah-eight.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    // Allow any *.vercel.app preview URL or listed origins
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, origin);
+    }
+    return callback(null, false);
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'X-Requested-With',
+    'Accept', 'X-CSRF-Token', 'X-Api-Version',
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+}));
 
 // Explicitly handle all OPTIONS requests to prevent Vercel Edge from dropping headers
 // Removed because app.use(cors()) already does this, and wildcard options break Express 5
