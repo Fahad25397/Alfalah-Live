@@ -1,40 +1,34 @@
 import axios from 'axios';
 
 /**
- * Robust API Client with Automatic Fallback
- * - Tries custom VITE_API_URL first (if defined).
- * - If VITE_API_URL is outdated/returns 404 or Network Error, automatically falls back to same-domain relative '/api/...'
+ * Robust API Client
+ * - In development: calls http://localhost:5000 (local backend server)
+ * - In production: uses same-origin relative paths (/api/...) since the
+ *   Vercel serverless functions live on the same domain as the frontend.
+ *   This avoids CORS entirely.
  */
 export const apiRequest = async (config) => {
-  // In production, fallback to the deployed backend URL if VITE_API_URL is missing
-  const fallbackUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://backend-beige-kappa-75.vercel.app';
-  const customBase = (import.meta.env.VITE_API_URL || fallbackUrl).replace(/\/$/, '');
-  
+  // Use VITE_API_URL if explicitly set, otherwise localhost in dev, or same-origin in prod
+  const baseUrl = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
+    : import.meta.env.DEV
+      ? 'http://localhost:5000'
+      : ''; // empty string = same-origin relative path
+
   const path = config.url.startsWith('/') ? config.url : `/${config.url}`;
-  const fullUrl = customBase ? `${customBase}${path}` : path;
+  const fullUrl = `${baseUrl}${path}`;
 
-  try {
-    const token = localStorage.getItem('admin_token');
-    const headers = { ...config.headers };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    return await axios({
-      ...config,
-      url: fullUrl,
-      headers
-    });
-  } catch (err) {
-    if (customBase && (err.response?.status === 404 || !err.response)) {
-      console.warn(`[API Fallback] ${config.method?.toUpperCase() || 'GET'} to ${fullUrl} failed (${err.response?.status || 'Network Error'}). Retrying on same-domain path: ${path}`);
-      return await axios({
-        ...config,
-        url: path,
-      });
-    }
-    throw err;
+  const token = localStorage.getItem('admin_token');
+  const headers = { ...config.headers };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
+
+  return await axios({
+    ...config,
+    url: fullUrl,
+    headers,
+  });
 };
 
 export const getImageUrl = (imagePath, requestedWidth = null) => {
@@ -43,10 +37,12 @@ export const getImageUrl = (imagePath, requestedWidth = null) => {
   let sourceUrl = imagePath;
 
   if (!imagePath.startsWith('http') && !imagePath.startsWith('data:') && !imagePath.startsWith('blob:')) {
-    // Fallback to localhost:5000 or the production backend URL
-    const fallbackUrl = import.meta.env.DEV ? 'http://localhost:5000' : 'https://backend-beige-kappa-75.vercel.app';
-    const customBase = (import.meta.env.VITE_API_URL || fallbackUrl).replace(/\/$/, '');
-    sourceUrl = `${customBase}${imagePath}`;
+    const baseUrl = import.meta.env.VITE_API_URL
+      ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
+      : import.meta.env.DEV
+        ? 'http://localhost:5000'
+        : '';
+    sourceUrl = `${baseUrl}${imagePath}`;
   }
 
   // If local dev or blob/data, don't use Cloudinary fetch
@@ -79,3 +75,4 @@ export const api = {
 };
 
 export default api;
+
