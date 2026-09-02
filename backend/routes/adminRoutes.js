@@ -17,7 +17,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Fallback hash for 'admin123' if env variable is missing on Vercel
-    const adminHash = process.env.ADMIN_PASSWORD_HASH || '$2b$10$AHSKEjOCK9yOqBpIDvGFAOioLCXYfdUhnEXgSiegHXgp26M13BpXy';
+    const adminHash = process.env.ADMIN_PASSWORD_HASH || '$2b$10$XKEpnsx.q5OWcw/Oh7wByuekIOuUHv7PIB/I6poMaOUGpGis820Yq';
     if (!adminHash) {
       console.error('ADMIN_PASSWORD_HASH not set in environment variables');
       return res.status(500).json({ message: 'Server configuration error' });
