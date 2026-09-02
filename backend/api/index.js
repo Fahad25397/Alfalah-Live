@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use(cors({ optionsSuccessStatus: 200 }));
 
 // Explicitly handle all OPTIONS requests to prevent Vercel Edge from dropping headers
-app.options('*', cors({ optionsSuccessStatus: 200 }));
+// Removed because app.use(cors()) already does this, and wildcard options break Express 5
 
 // Standard CORS configuration for Express routes (Removed in favor of manual override)
 
