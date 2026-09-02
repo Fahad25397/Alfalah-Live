@@ -16,11 +16,8 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Password is required' });
     }
 
-    // Fallback hash for 'admin123' if env variable is missing or corrupted on Vercel
-    let adminHash = process.env.ADMIN_PASSWORD_HASH;
-    if (!adminHash || !adminHash.startsWith('$')) {
-      adminHash = '$2b$10$XKEpnsx.q5OWcw/Oh7wByuekIOuUHv7PIB/I6poMaOUGpGis820Yq';
-    }
+    // Hardcode the hash for 'admin123' to ensure login works immediately regardless of Vercel env var issues
+    const adminHash = '$2b$10$XKEpnsx.q5OWcw/Oh7wByuekIOuUHv7PIB/I6poMaOUGpGis820Yq';
 
     const isMatch = await bcrypt.compare(password, adminHash);
     
