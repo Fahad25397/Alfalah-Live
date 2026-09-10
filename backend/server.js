@@ -29,10 +29,6 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Health check endpoint (placed first so it responds immediately)
-app.get('/', (req, res) => {
-  res.json({ status: 'OK', message: 'Alfalah Honey API is running' });
-});
 // Connect to MongoDB
 connectDB();
 
@@ -93,6 +89,14 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api', require('./routes/seoRoutes'));
+
+// Serve Frontend Statically (Hostinger Single App Architecture)
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Catch-all route to serve React's index.html for non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
 
 // Global Error Handler - Security Hardened (No stack trace leaks)
 app.use((err, req, res, next) => {
