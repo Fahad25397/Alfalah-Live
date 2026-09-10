@@ -30,7 +30,9 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Connect to MongoDB
-connectDB();
+connectDB().catch(err => {
+  console.error("CRITICAL: Failed to connect to MongoDB on startup. Ensure Hostinger IPs are whitelisted in MongoDB Atlas.", err);
+});
 
 // Force CORS properly
 app.use((req, res, next) => {
