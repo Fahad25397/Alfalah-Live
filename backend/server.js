@@ -1,10 +1,14 @@
 const express = require('express');
+const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
+
+// Resolve root directory securely for shared hosting
+const ROOT_DIR = process.cwd() || __dirname;
 
 dotenv.config();
 
@@ -78,9 +82,8 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 // Serve local uploads folder statically
-const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
-  setHeaders: (res, path, stat) => {
+app.use('/uploads', express.static(path.join(ROOT_DIR, 'uploads'), {
+  setHeaders: (res, filePath, stat) => {
     res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     res.set('Access-Control-Allow-Origin', '*');
   }
@@ -93,11 +96,11 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api', require('./routes/seoRoutes'));
 
 // Serve Frontend Statically (Hostinger Single App Architecture)
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(ROOT_DIR, 'public')));
 
 // Catch-all route to serve React's index.html for non-API routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(ROOT_DIR, 'public', 'index.html'));
 });
 
 // Global Error Handler - Security Hardened (No stack trace leaks)
