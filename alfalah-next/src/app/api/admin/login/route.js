@@ -2,19 +2,31 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import { connectDB } from '@/lib/db';
+import Admin from '@/lib/models/Admin';
 
 export async function POST(request) {
   try {
-    const { password } = await request.json();
+    await connectDB();
+    const { email, password } = await request.json();
     
-    if (!password) {
-      return NextResponse.json({ message: 'Password is required' }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
     }
 
-    // Hardcode the hash for 'admin123' to ensure login works immediately regardless of Vercel env var issues
-    const adminHash = '$2b$10$XKEpnsx.q5OWcw/Oh7wByuekIOuUHv7PIB/I6poMaOUGpGis820Yq';
+    if (email !== 'alfalahhoney2@gmail.com') {
+      return NextResponse.json({ message: 'Unauthorized email' }, { status: 401 });
+    }
 
-    const isMatch = await bcrypt.compare(password, adminHash);
+    let admin = await Admin.findOne({ email });
+
+    // Seed the database if this is the first login
+    if (!admin) {
+      const defaultHash = '$2b$10$XKEpnsx.q5OWcw/Oh7wByuekIOuUHv7PIB/I6poMaOUGpGis820Yq';
+      admin = await Admin.create({ email, password: defaultHash });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
     
     if (!isMatch) {
       // Add a slight delay to mitigate timing attacks/brute force
@@ -23,7 +35,7 @@ export async function POST(request) {
     }
 
     const token = jwt.sign(
-      { role: 'admin' },
+      { role: 'admin', email: admin.email },
       process.env.JWT_SECRET || 'fallback_secret_for_dev',
       { expiresIn: '24h' }
     );
@@ -32,8 +44,8 @@ export async function POST(request) {
     cookieStore.set('admin_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Adjust sameSite based on cross-origin needs
-      maxAge: 24 * 60 * 60, // 24 hours (in seconds for next/headers cookies maxAge)
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60,
       path: '/'
     });
 

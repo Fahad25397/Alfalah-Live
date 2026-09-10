@@ -35,9 +35,7 @@ if (useCloudinary) {
     }
   });
 }
-
 const multerInstance = multer({ storage });
-
 // Wrapper middleware to catch upload crashes cleanly
 const uploadMiddleware = (req, res, next) => {
   const uploadSingle = multerInstance.single('imageFile');

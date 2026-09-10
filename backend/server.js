@@ -12,10 +12,15 @@ const app = express();
 
 // Security Middlewares
 app.use(helmet({
-  crossOriginResourcePolicy: false,
-  crossOriginOpenerPolicy: false,
-  crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow serving images cross-origin
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "res.cloudinary.com", "http://localhost:5000", "https://alfalah-eight.vercel.app"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+    },
+  },
 }));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -66,7 +71,7 @@ app.use((req, res, next) => {
 // Enable CORS for all routes
 app.use(cors());
 
-// Increase JSON / urlencoded payload limits for image uploads
+// Limit JSON / urlencoded payload sizes for security
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -87,13 +92,14 @@ app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api', require('./routes/seoRoutes'));
 
-// Global Error Handler
+// Global Error Handler - Security Hardened (No stack trace leaks)
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  const isProd = process.env.NODE_ENV === 'production';
+  // Internally log the error but don't expose stack to the client
+  console.error('Intercepted Error:', err.stack || err);
+  
   res.status(err.statusCode || 500).json({
     status: 'error',
-    message: isProd ? 'Internal Server Error' : err.message,
+    message: 'An internal error occurred. Please try again later.',
   });
 });
 

@@ -15,8 +15,13 @@ const CATEGORIES = ['Honey', 'For Men', 'Dry Fruits', 'Zamzam Water', 'Olives & 
 const AdminDashboard = ({ onBackToShop }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
+  const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState('orders');
   const [orders, setOrders] = useState([]);
@@ -80,16 +85,35 @@ const AdminDashboard = ({ onBackToShop }) => {
     e.preventDefault();
     setLoginLoading(true);
     try {
-      const res = await api.post('/api/admin/login', { password: loginPassword });
+      const res = await api.post('/api/admin/login', { email: loginEmail, password: loginPassword });
       if (res.data && res.data.token) {
         localStorage.setItem('admin_token', res.data.token);
       }
       setIsAuthenticated(true);
       showToast('Login successful!');
     } catch (err) {
-      alert('Invalid password');
+      alert(err.response?.data?.message || 'Invalid credentials');
     } finally {
       setLoginLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setChangePasswordLoading(true);
+    try {
+      await api.post('/api/admin/change-password', {
+        currentPassword,
+        newPassword
+      });
+      showToast('Password changed successfully');
+      setIsChangePasswordOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to change password');
+    } finally {
+      setChangePasswordLoading(false);
     }
   };
 
@@ -510,6 +534,15 @@ const AdminDashboard = ({ onBackToShop }) => {
           </div>
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
+              <label className="block text-sm font-bold text-[#3c2415] mb-2">Admin Email</label>
+              <input
+                type="email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 mb-4"
+                placeholder="admin@example.com"
+              />
               <label className="block text-sm font-bold text-[#3c2415] mb-2">Admin Password</label>
               <input
                 type="password"
@@ -559,6 +592,12 @@ const AdminDashboard = ({ onBackToShop }) => {
           </p>
         </div>
         <div className="flex gap-2">
+          <button 
+            onClick={() => setIsChangePasswordOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl font-bold transition text-xs sm:text-sm shadow-sm"
+          >
+             Change Password
+          </button>
           <button 
             onClick={handleLogout}
             className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-800 rounded-xl font-bold transition text-xs sm:text-sm shadow-sm"
@@ -1265,6 +1304,55 @@ const AdminDashboard = ({ onBackToShop }) => {
                 >
                   {actionLoading && <RefreshCw size={14} className="animate-spin" />}
                   Save Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {isChangePasswordOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex flex-col justify-center items-center p-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-serif font-bold text-[#3c2415]">Change Password</h3>
+              <button 
+                onClick={() => setIsChangePasswordOpen(false)}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-[#3c2415] mb-2">Current Password</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-[#3c2415] mb-2">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={changePasswordLoading}
+                  className="w-full py-3 bg-[#3c2415] hover:bg-[#2b1c12] text-amber-100 font-bold rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {changePasswordLoading ? <RefreshCw className="animate-spin" size={18} /> : 'Update Password'}
                 </button>
               </div>
             </form>

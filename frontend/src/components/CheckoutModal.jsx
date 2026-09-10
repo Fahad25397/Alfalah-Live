@@ -84,7 +84,7 @@ const CheckoutModal = ({ isOpen, onClose }) => {
           </div>
         ) : (
           <div>
-            <h3 className="font-serif text-2xl font-bold text-[#3c2415] mb-2">Guest Checkout</h3>
+            <h3 className="font-serif text-2xl font-bold text-[#3c2415] mb-2">Checkout</h3>
             <p className="text-xs text-amber-800/80 mb-6">Enter delivery information below to complete your order.</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
