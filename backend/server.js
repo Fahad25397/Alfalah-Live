@@ -40,6 +40,8 @@ connectDB();
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
+    'https://alfalahhoney.com',
+    'https://www.alfalahhoney.com',
     'https://alfalah-eight.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000'
