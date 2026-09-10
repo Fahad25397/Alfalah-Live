@@ -15,7 +15,7 @@ const CartDrawer = () => {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 overflow-hidden">
+      <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label="Shopping Cart">
         {/* Backdrop */}
         <div 
           className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -34,6 +34,7 @@ const CartDrawer = () => {
               </div>
               <button 
                 onClick={() => setIsCartOpen(false)}
+                aria-label="Close shopping cart"
                 className="w-9 h-9 rounded-full bg-white/10 hover:bg-white hover:text-[#3c2415] text-white border border-white/20 shadow-xs flex items-center justify-center transition cursor-pointer active:scale-95"
               >
                 <X size={18} />
@@ -75,6 +76,7 @@ const CartDrawer = () => {
                       <div className="flex items-center gap-2 mt-2">
                         <button 
                           onClick={() => updateQuantity(item.uniqueCartId || item._id, -1)}
+                          aria-label={`Decrease quantity of ${item.name}`}
                           className="p-1 rounded-lg bg-white/80 hover:bg-white text-[#3c2415] transition cursor-pointer border border-amber-200/60"
                         >
                           <Minus size={14} />
@@ -82,6 +84,7 @@ const CartDrawer = () => {
                         <span className="text-xs font-bold w-6 text-center text-[#3c2415]">{item.quantity}</span>
                         <button 
                           onClick={() => updateQuantity(item.uniqueCartId || item._id, 1)}
+                          aria-label={`Increase quantity of ${item.name}`}
                           className="p-1 rounded-lg bg-white/80 hover:bg-white text-[#3c2415] transition cursor-pointer border border-amber-200/60"
                         >
                           <Plus size={14} />
@@ -91,6 +94,7 @@ const CartDrawer = () => {
 
                     <button 
                       onClick={() => removeFromCart(item.uniqueCartId || item._id)}
+                      aria-label={`Remove ${item.name} from cart`}
                       className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
                     >
                       <Trash2 size={18} />

@@ -72,7 +72,7 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
 
   return (
     // Balanced mobile top padding (pt-20) so it doesn't touch the fixed navbar, while keeping laptop pt-24 intact
-    <div id="hero" className="w-full bg-[#faf8f5] pt-20 md:pt-24 pb-6 scroll-mt-28">
+    <section id="hero" aria-label="Featured Products Carousel" className="w-full bg-[#faf8f5] pt-20 md:pt-24 pb-6 scroll-mt-28">
       {/* Navbar sits at the top */}
       <Navbar onOpenCart={onOpenCart} onOpenAdmin={onOpenAdmin} />
 
@@ -80,18 +80,22 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
       <div className="mx-2 sm:mx-3 mt-2 md:mt-4 relative w-[calc(100%-1rem)] sm:w-[calc(100%-1.5rem)] min-h-[85vh] bg-[#221a15] text-white flex flex-col justify-between overflow-hidden rounded-[2.5rem] shadow-xl">
 
         {/* Full-Width Sliding Image Track Background with Soft Crossfade & Ken Burns Zoom */}
-        <div className="absolute inset-0 z-0 overflow-hidden rounded-[2.5rem]">
+        <div className="absolute inset-0 z-0 overflow-hidden rounded-[2.5rem]" role="region" aria-roledescription="carousel" aria-label="Product highlight slides">
           {slides.map((slide, idx) => {
             const isActive = currentSlide === idx;
             return (
               <div
                 key={idx}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Slide ${idx + 1} of ${slides.length}: ${slide.title}`}
+                aria-hidden={!isActive}
                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                   }`}
               >
                 <img
                   src={getImageUrl(slide.image, 1600)}
-                  alt={slide.title}
+                  alt={`${slide.title} — ${slide.description.substring(0, 100)}`}
                   loading="eager"
                   decoding="async"
                   width="1600"
@@ -107,7 +111,7 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
         </div>
 
         {/* Hero Content Layer with Gentle Fade & Upward Drift */}
-        <div className="relative z-20 max-w-7xl mx-auto w-full px-6 lg:px-12 pt-28 pb-20 mt-auto flex items-center">
+        <div className="relative z-20 max-w-7xl mx-auto w-full px-6 lg:px-12 pt-28 pb-20 mt-auto flex items-center" aria-live="polite" aria-atomic="true">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
 
             <div className="lg:col-span-8 xl:col-span-7 space-y-6 text-left">
@@ -168,7 +172,7 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
         </div>
 
       </div>
-    </div>
+    </section>
   );
 };
 

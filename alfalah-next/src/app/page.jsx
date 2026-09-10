@@ -11,6 +11,8 @@ import CartDrawer from '@/components/CartDrawer';
 import WhatsAppIcon from '@/components/WhatsAppIcon';
 import SEO from '@/components/SEO';
 
+const SITE_URL = 'https://alfalah-store.vercel.app';
+
 export default function Storefront() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const router = useRouter();
@@ -29,38 +31,131 @@ export default function Storefront() {
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "Alfalah Store",
-    "image": "https://alfalah-store.vercel.app/logo.png",
-    "url": "https://alfalah-store.vercel.app/",
-    "telephone": "+923000000000",
+    "@id": `${SITE_URL}/#local-business`,
+    "name": "Alfalah Honey",
+    "image": `${SITE_URL}/logo.png`,
+    "url": SITE_URL,
+    "telephone": "+923331010640",
+    "email": "alfalahhoney2@gmail.com",
+    "description": "Pakistan's trusted store for 100% pure Sidr honey, Ajwa & Medjool dates, Zamzam water, cold-pressed olive oil, desi ghee, saffron, shilajit & premium dry fruits. Established 1990 in Peshawar.",
+    "priceRange": "$$",
+    "currenciesAccepted": "PKR",
+    "paymentAccepted": "Cash on Delivery",
+    "foundingDate": "1990",
+    "founder": {
+      "@type": "Person",
+      "name": "Haji Hafeezullah (Gull and Son's)"
+    },
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": "Lahore",
+      "streetAddress": "Opposite to Salman Bakers near Sweet Cream, Gulbahar",
+      "addressLocality": "Peshawar",
+      "addressRegion": "Khyber Pakhtunkhwa",
+      "postalCode": "25000",
       "addressCountry": "PK"
     },
-    "description": "Premium organic products including pure Sidr Honey, Dates, Zamzam water, and more.",
-    "priceRange": "$$"
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 34.0151,
+      "longitude": 71.5249
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "Pakistan"
+    },
+    "sameAs": [
+      "https://www.instagram.com/alfalah_honey_gulbahar",
+      "https://www.facebook.com/share/1M7PpHWra6/"
+    ],
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "09:00",
+      "closes": "22:00"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "200000",
+      "bestRating": "5"
+    }
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
+    "name": "Alfalah Honey",
+    "url": SITE_URL,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${SITE_URL}/logo.png`,
+      "width": 512,
+      "height": 512
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+923331010640",
+      "contactType": "customer service",
+      "email": "alfalahhoney2@gmail.com",
+      "areaServed": "PK",
+      "availableLanguage": ["English", "Urdu"]
+    },
+    "sameAs": [
+      "https://www.instagram.com/alfalah_honey_gulbahar",
+      "https://www.facebook.com/share/1M7PpHWra6/"
+    ]
+  };
+
+  const webSiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    "name": "Alfalah Honey",
+    "url": SITE_URL,
+    "description": "Premium organic honey, dates, Zamzam water & natural wellness products. Cash on delivery across Pakistan.",
+    "publisher": { "@id": `${SITE_URL}/#organization` },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${SITE_URL}/?search={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": SITE_URL
+      }
+    ]
   };
 
   return (
     <div className="min-h-screen bg-[#faf8f5] text-[#3c2415] relative flex flex-col justify-between">
       <SEO 
-        title="Alfalah - Premium Organic Honey & Natural Products"
-        description="Shop pure Sidr Honey, Zamzam water, premium dates, and organic natural products. Experience authenticity and quality at Alfalah."
-        url="https://alfalah-store.vercel.app/"
-        schema={localBusinessSchema}
+        title="Alfalah Honey — Buy Pure Sidr Honey, Organic Dates & Zamzam Water Online in Pakistan"
+        description="Pakistan's trusted store for 100% pure Sidr honey, Ajwa & Medjool dates, Zamzam water, cold-pressed olive oil, desi ghee, saffron, shilajit & premium dry fruits. Cash on delivery nationwide."
+        url={SITE_URL}
+        image={`${SITE_URL}/logo.png`}
+        schema={[localBusinessSchema, organizationSchema, webSiteSchema, breadcrumbSchema]}
       />
-      <div>
-        <main>
-          <Hero onOpenCart={() => setIsCartOpen(true)} onOpenAdmin={() => router.push('/admin')} />
-          <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
-            <ProductGrid />
-          </Suspense>
-          <SatisfiedClientsSection />
-          <AboutBookSection />
-          <ContactUs />
-        </main>
-      </div>
+      <main>
+        <Hero onOpenCart={() => setIsCartOpen(true)} onOpenAdmin={() => router.push('/admin')} />
+        <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
+          <ProductGrid />
+        </Suspense>
+        <SatisfiedClientsSection />
+        <AboutBookSection />
+        <ContactUs />
+      </main>
 
       <Footer />
 
@@ -73,3 +168,4 @@ export default function Storefront() {
     </div>
   );
 }
+

@@ -4,12 +4,12 @@ import { Users, Star, Award } from 'lucide-react';
 
 const SatisfiedClientsSection = () => {
   return (
-    <section className="w-full bg-[#3c2415] py-20 px-6 lg:px-16 text-[#f4ecd8] border-y border-amber-900/40 relative overflow-hidden">
+    <section aria-label="Customer Trust Statistics" className="w-full bg-[#3c2415] py-20 px-6 lg:px-16 text-[#f4ecd8] border-y border-amber-900/40 relative overflow-hidden">
       {/* Subtle decorative glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-amber-600/10 blur-[100px] rounded-full pointer-events-none"></div>
       
       <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
-        <div className="flex items-center justify-center gap-2 text-amber-400 mb-6">
+        <div className="flex items-center justify-center gap-2 text-amber-400 mb-6" role="img" aria-label="5 out of 5 stars rating">
           <Star size={24} fill="currentColor" />
           <Star size={24} fill="currentColor" />
           <Star size={24} fill="currentColor" />
@@ -27,19 +27,19 @@ const SatisfiedClientsSection = () => {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-          <div className="flex flex-col items-center bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl">
+          <div role="figure" aria-label="200,000+ Happy Customers" className="flex flex-col items-center bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl">
             <Users size={36} className="text-amber-400 mb-4" />
             <h3 className="text-3xl font-bold font-serif mb-2 text-white">200k+</h3>
             <span className="text-xs text-amber-200/70 uppercase tracking-widest font-semibold">Happy Customers</span>
           </div>
           
-          <div className="flex flex-col items-center bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl">
+          <div role="figure" aria-label="4.9 out of 5 Average Rating" className="flex flex-col items-center bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl">
             <Star size={36} className="text-amber-400 mb-4" />
             <h3 className="text-3xl font-bold font-serif mb-2 text-white">4.9/5</h3>
             <span className="text-xs text-amber-200/70 uppercase tracking-widest font-semibold">Average Rating</span>
           </div>
           
-          <div className="flex flex-col items-center bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl">
+          <div role="figure" aria-label="100% Premium Quality" className="flex flex-col items-center bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl">
             <Award size={36} className="text-amber-400 mb-4" />
             <h3 className="text-3xl font-bold font-serif mb-2 text-white">100%</h3>
             <span className="text-xs text-amber-200/70 uppercase tracking-widest font-semibold">Premium Quality</span>

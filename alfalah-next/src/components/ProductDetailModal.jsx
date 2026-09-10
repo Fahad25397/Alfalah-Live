@@ -34,7 +34,7 @@ const ProductDetailModal = ({ product, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`${product.name} product details`}>
       <SEO 
         title={`${product.name} | Alfalah Store`}
         description={product.description}
@@ -47,6 +47,7 @@ const ProductDetailModal = ({ product, onClose }) => {
         {/* Close Button */}
         <button 
           onClick={onClose} 
+          aria-label="Close product details"
           className="absolute top-4 right-4 p-2 text-amber-900 hover:bg-amber-100 rounded-full transition z-10 cursor-pointer"
         >
           <X size={20} />
@@ -57,7 +58,7 @@ const ProductDetailModal = ({ product, onClose }) => {
           <div className="relative rounded-2xl overflow-hidden bg-amber-50 h-64 md:h-80 border border-amber-100">
             <img 
               src={getImageUrl(product.image, 800)} 
-              alt={product.name}
+              alt={`${product.name} — ${(product.description || '').substring(0, 80)}`}
               loading="eager"
               decoding="async"
               width="800"

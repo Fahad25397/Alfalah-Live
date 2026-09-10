@@ -96,6 +96,7 @@ const AboutBookSection = () => {
                   </span>
                   <button 
                     onClick={() => setIsOpen(false)}
+                    aria-label="Close book"
                     className="p-1 rounded-full hover:bg-black/20 text-amber-200 transition cursor-pointer"
                     title="Close Book"
                   >
@@ -104,20 +105,21 @@ const AboutBookSection = () => {
                 </div>
 
                 {/* Page Content */}
-                <div className="py-4 px-6 space-y-4 my-auto">
+                <article className="py-4 px-6 space-y-4 my-auto" aria-label="About Alfalah Honey">
                   <h4 className="text-xl font-serif font-bold text-[#3c2415]">
                     {pages[currentPage].title}
                   </h4>
                   <p className="text-[#3c2415]/80 text-sm sm:text-base leading-relaxed font-light">
                     {pages[currentPage].content}
                   </p>
-                </div>
+                </article>
 
                 {/* Page Navigation Footer */}
                 <div className="flex items-center justify-between px-6 py-3.5 border-t border-amber-900/10 bg-[#faf8f5]">
                   <button 
                     onClick={prevPage}
                     disabled={currentPage === 0}
+                    aria-label="Previous page"
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
                       currentPage === 0 
                         ? 'opacity-40 cursor-not-allowed text-[#3c2415]/40' 
@@ -135,6 +137,7 @@ const AboutBookSection = () => {
                   <button 
                     onClick={nextPage}
                     disabled={currentPage === pages.length - 1}
+                    aria-label="Next page"
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
                       currentPage === pages.length - 1 
                         ? 'opacity-40 cursor-not-allowed text-[#3c2415]/40' 

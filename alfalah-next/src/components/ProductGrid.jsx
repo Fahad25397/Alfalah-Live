@@ -163,13 +163,15 @@ const ProductGrid = () => {
     const currentVariant = variants[currentVariantIndex] || variants[0];
 
     return (
-      <div 
+      <article 
         key={p._id} 
+        itemScope
+        itemType="https://schema.org/Product"
         className="min-w-[280px] sm:min-w-[310px] max-w-[310px] flex-shrink-0 snap-start bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-amber-200/60 transition-all duration-300 group flex flex-col justify-between"
       >
         <div>
           <div className="relative h-60 overflow-hidden bg-amber-50">
-            <img src={getImageUrl(p.image, 400)} alt={p.name} loading="lazy" decoding="async" width="310" height="240" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer ${currentVariant.outOfStock ? 'opacity-50 grayscale' : ''}`} onClick={() => openProductModal(p)} />
+            <img src={getImageUrl(p.image, 400)} alt={`${p.name} — ${p.category || 'Organic'} — Alfalah Honey`} loading="lazy" decoding="async" width="310" height="240" itemProp="image" className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer ${currentVariant.outOfStock ? 'opacity-50 grayscale' : ''}`} onClick={() => openProductModal(p)} />
             
             {currentVariant.outOfStock ? (
               <span className="absolute top-4 right-4 bg-gray-800 text-white font-bold text-xs px-3 py-1 rounded-full shadow-md z-10 pointer-events-none">
@@ -199,7 +201,7 @@ const ProductGrid = () => {
               </span>
             </div>
 
-            <h3 onClick={() => openProductModal(p)} className="font-serif font-bold text-lg text-[#3c2415] hover:text-amber-700 transition cursor-pointer truncate">
+            <h3 onClick={() => openProductModal(p)} itemProp="name" className="font-serif font-bold text-lg text-[#3c2415] hover:text-amber-700 transition cursor-pointer truncate">
               {p.name}
             </h3>
             {p.urduName ? (
@@ -209,7 +211,7 @@ const ProductGrid = () => {
             ) : (
               <div className="h-[22.5px] mt-0.5" />
             )}
-            <p className="text-[#3c2415]/70 text-xs mt-1.5 line-clamp-2 font-light leading-relaxed">
+            <p itemProp="description" className="text-[#3c2415]/70 text-xs mt-1.5 line-clamp-2 font-light leading-relaxed">
               {p.description}
             </p>
 
@@ -239,7 +241,8 @@ const ProductGrid = () => {
         </div>
 
         <div className="p-5 pt-0 flex items-center justify-between mt-4">
-          <div>
+          <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
+            <meta itemProp="priceCurrency" content="PKR" />
             <span className="text-[10px] text-[#3c2415]/60 uppercase font-bold tracking-wider block">Price</span>
             <div className="flex items-baseline flex-wrap gap-x-2">
               {currentVariant.isSale && currentVariant.oldPrice && (
@@ -247,9 +250,10 @@ const ProductGrid = () => {
                   {formatPrice(currentVariant.oldPrice)}
                 </span>
               )}
-              <span dir="ltr" className="inline-block text-xl font-serif font-bold text-[#3c2415]">
+              <span dir="ltr" itemProp="price" content={currentVariant.price} className="inline-block text-xl font-serif font-bold text-[#3c2415]">
                 {formatPrice(currentVariant.price)}
               </span>
+              <link itemProp="availability" href={currentVariant.outOfStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'} />
             </div>
           </div>
           <button 
@@ -264,7 +268,7 @@ const ProductGrid = () => {
             <ShoppingCart size={15} /> {currentVariant.outOfStock ? 'Out of Stock' : 'Add'}
           </button>
         </div>
-      </div>
+      </article>
     );
   };
 
@@ -324,6 +328,7 @@ const ProductGrid = () => {
               placeholder="Search items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Search products"
               className="w-full pl-11 pr-4 py-3 bg-white/90 rounded-2xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#f5eaba] text-[#3c2415] placeholder-[#3c2415]/40"
             />
           </div>
@@ -332,6 +337,7 @@ const ProductGrid = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
+              aria-label="Sort products"
               className="bg-transparent focus:outline-none font-medium text-[#3c2415] cursor-pointer"
             >
               <option value="featured">Sort by: Featured</option>

@@ -101,6 +101,18 @@ const Footer = () => {
                 <path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.37 14.5 5 15.5 5H18V0h-3.808C10.592 0 9 1.582 9 4.75V8z" />
               </svg>
             </a>
+            {/* TikTok SVG */}
+            <a
+              href="https://www.tiktok.com/@alfalah_honey_gulbahar?_r=1&_t=ZS-99JuHUOZ8rs"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok"
+              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-white"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12.525.02c1.31-.02 2.61-.01 3.91.04.15 1.5.85 2.87 1.94 3.82.99.87 2.29 1.34 3.63 1.35v4.05c-1.35.03-2.67-.32-3.8-1-.74-.46-1.39-1.04-1.92-1.72-.03 2.54-.04 5.09-.04 7.64 0 3.39-2.58 6.36-5.95 6.74-3.41.38-6.62-1.78-7.55-5.06-.94-3.27 1.08-6.65 4.31-7.4 1.25-.29 2.56-.25 3.79.16V12.7c-1.46-.38-3.03-.12-4.29.74-1.32.9-2.07 2.45-1.96 4.02.13 1.76 1.48 3.23 3.23 3.51 1.76.28 3.53-.59 4.38-2.14.47-.85.73-1.83.74-2.82V.02z"/>
+              </svg>
+            </a>
           </div>
         </div>
 
