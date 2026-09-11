@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 
 dotenv.config();
 
@@ -85,6 +86,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
     res.set('Access-Control-Allow-Origin', '*');
   }
 }));
+
+// Database connection check middleware to prevent hanging API requests
+app.use('/api', (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      status: 'error',
+      message: 'Database connection is not ready. Please ensure MongoDB Atlas IP whitelist includes 0.0.0.0/0.',
+    });
+  }
+  next();
+});
 
 // Routes
 app.use('/api/admin', require('./routes/adminRoutes'));
