@@ -25,7 +25,7 @@ const ProductDetailModal = ({ product, onClose }) => {
     "sku": product._id,
     "offers": {
       "@type": "Offer",
-      "url": `https://alfalah-store.vercel.app/?product=${product._id}`,
+      "url": `https://alfalahhoney.com/?product=${product._id}`,
       "priceCurrency": "PKR",
       "price": displayVariant.price,
       "availability": "https://schema.org/InStock",
@@ -38,7 +38,7 @@ const ProductDetailModal = ({ product, onClose }) => {
       <SEO 
         title={`${product.name} | Alfalah Store`}
         description={product.description}
-        url={`https://alfalah-store.vercel.app/?product=${product._id}`}
+        url={`https://alfalahhoney.com/?product=${product._id}`}
         image={getImageUrl(product.image)}
         schema={productSchema}
       />

@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const SITE_URL = 'https://alfalah-store.vercel.app';
+const SITE_URL = 'https://alfalahhoney.com';
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),

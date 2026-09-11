@@ -5,7 +5,7 @@ const Product = require('../models/Product');
 router.get('/sitemap.xml', async (req, res) => {
   try {
     const products = await Product.find({}, '_id updatedAt name');
-    const frontendUrl = process.env.FRONTEND_URL || 'https://alfalah-store.vercel.app'; // Fallback to your main domain
+    const frontendUrl = process.env.FRONTEND_URL || 'https://alfalahhoney.com'; // Fallback to your main domain
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

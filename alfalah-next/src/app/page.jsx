@@ -11,7 +11,7 @@ import CartDrawer from '@/components/CartDrawer';
 import WhatsAppIcon from '@/components/WhatsAppIcon';
 import SEO from '@/components/SEO';
 
-const SITE_URL = 'https://alfalah-store.vercel.app';
+const SITE_URL = 'https://alfalahhoney.com';
 
 export default function Storefront() {
   const [isCartOpen, setIsCartOpen] = useState(false);

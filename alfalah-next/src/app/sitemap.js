@@ -2,7 +2,7 @@ import { connectDB } from '@/lib/db';
 import Product from '@/lib/models/Product';
 
 export default async function sitemap() {
-  const frontendUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfalah-store.vercel.app';
+  const frontendUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfalahhoney.com';
   
   await connectDB();
   const products = await Product.find({}, '_id updatedAt name');

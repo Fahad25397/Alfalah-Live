@@ -34,8 +34,8 @@ const Storefront = () => {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Alfalah Store",
-    "image": "https://alfalah-store.vercel.app/logo.png",
-    "url": "https://alfalah-store.vercel.app/",
+    "image": "https://alfalahhoney.com/logo.png",
+    "url": "https://alfalahhoney.com/",
     "telephone": "+923000000000",
     "address": {
       "@type": "PostalAddress",
@@ -51,7 +51,7 @@ const Storefront = () => {
       <SEO 
         title="Alfalah - Premium Organic Honey & Natural Products"
         description="Shop pure Sidr Honey, Zamzam water, premium dates, and organic natural products. Experience authenticity and quality at Alfalah."
-        url="https://alfalah-store.vercel.app/"
+        url="https://alfalahhoney.com/"
         schema={localBusinessSchema}
       />
       <div>
