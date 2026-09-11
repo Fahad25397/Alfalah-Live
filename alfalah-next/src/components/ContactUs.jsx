@@ -56,7 +56,7 @@ const ContactUs = () => {
               </div>
               <h4 className="font-serif font-bold text-[#3c2415] text-lg">Our Location</h4>
               <p className="text-[#3c2415]/70 text-sm font-light">
-                Alfalah Honey Opposite to Salman Bakers near Sweet Cream , Gulabahr,Peshawar.
+                Alfalah Honey Opposite to Salman Bakers near Soft Swirl , Gulbahar, Peshawar.
               </p>
             </div>
 

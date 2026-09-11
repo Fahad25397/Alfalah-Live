@@ -48,7 +48,7 @@ export default function Storefront() {
     },
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Opposite to Salman Bakers near Sweet Cream, Gulbahar",
+      "streetAddress": "Opposite to Salman Bakers near Soft Swirl, Gulbahar",
       "addressLocality": "Peshawar",
       "addressRegion": "Khyber Pakhtunkhwa",
       "postalCode": "25000",

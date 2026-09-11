@@ -49,7 +49,7 @@ const Footer = () => {
           <ul className="space-y-3 text-xs font-light">
             <li className="flex items-center gap-2.5 text-[#f4ecd8]/80">
               <MapPin size={15} className="text-amber-300 flex-shrink-0" />
-              <span>Alfalah Honey Opposite to Salman Bakers near Sweet Cream , Gulabahr,Peshawar</span>
+              <span>Alfalah Honey Opposite to Salman Bakers near Soft Swirl , Gulbahar, Peshawar</span>
             </li>
             <li className="flex items-center gap-2.5 text-[#f4ecd8]/80">
               <Phone size={15} className="text-amber-300 flex-shrink-0" />
