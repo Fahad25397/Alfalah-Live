@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../api';
 
 const CartContext = createContext();
 
@@ -8,10 +9,23 @@ export const CartProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [deliverySettings, setDeliverySettings] = useState([]);
 
   useEffect(() => {
     localStorage.setItem('alfalah_cart', JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    const fetchDeliverySettings = async () => {
+      try {
+        const res = await api.get('/api/delivery-settings');
+        setDeliverySettings(res.data);
+      } catch (err) {
+        console.error('Error fetching delivery settings:', err);
+      }
+    };
+    fetchDeliverySettings();
+  }, []);
 
   const addToCart = (product) => {
     // Determine the unique identifier for the item (fallback to _id if uniqueCartId isn't present)
@@ -54,6 +68,32 @@ export const CartProvider = ({ children }) => {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
+  // Calculate Delivery Charge based on settings
+  let deliveryCharge = 0;
+  if (totalPrice >= 10000) {
+    deliveryCharge = 0; // Free delivery for orders >= 10,000 PKR
+  } else if (cart.length > 0) {
+    // Determine the highest applicable delivery charge from items in cart
+    let highestCharge = 150; // Default base delivery charge
+    
+    cart.forEach(item => {
+      const category = item.category || 'Honey';
+      const weight = item.weight || '';
+      
+      const matchedSetting = deliverySettings.find(
+        s => s.category.toLowerCase() === category.toLowerCase() && s.weight === weight
+      );
+      
+      if (matchedSetting && Number(matchedSetting.charge) > highestCharge) {
+        highestCharge = Number(matchedSetting.charge);
+      }
+    });
+    
+    deliveryCharge = highestCharge;
+  }
+  
+  const finalTotal = totalPrice + deliveryCharge;
+
   return (
     <CartContext.Provider
       value={{
@@ -66,6 +106,8 @@ export const CartProvider = ({ children }) => {
         clearCart,
         totalItems,
         totalPrice,
+        deliveryCharge,
+        finalTotal,
       }}
     >
       {children}

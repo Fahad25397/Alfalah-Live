@@ -45,6 +45,12 @@ const AdminDashboard = ({ onBackToShop }) => {
   const [allOrdersForRevenue, setAllOrdersForRevenue] = useState([]);
   const [fetchingRevenue, setFetchingRevenue] = useState(false);
 
+  // Delivery Settings State
+  const [deliverySettings, setDeliverySettings] = useState([]);
+  const [fetchingSettings, setFetchingSettings] = useState(false);
+  const [deliveryForm, setDeliveryForm] = useState({ category: 'Honey', weight: '', charge: '' });
+  const [isEditingSetting, setIsEditingSetting] = useState(null);
+
   // Product Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -158,6 +164,18 @@ const AdminDashboard = ({ onBackToShop }) => {
     }
   };
 
+  const fetchDeliverySettings = async () => {
+    setFetchingSettings(true);
+    try {
+      const response = await api.get('/api/delivery-settings');
+      setDeliverySettings(response.data);
+    } catch (err) {
+      console.error('Error fetching delivery settings:', err);
+    } finally {
+      setFetchingSettings(false);
+    }
+  };
+
   const fetchProducts = async (page = 1) => {
     try {
       const response = await api.get(`/api/products?page=${page}&limit=12`);
@@ -191,6 +209,9 @@ const AdminDashboard = ({ onBackToShop }) => {
     if (activeTab === 'revenue' && allOrdersForRevenue.length === 0) {
       fetchAllOrdersForRevenue();
     }
+    if (activeTab === 'delivery' && deliverySettings.length === 0) {
+      fetchDeliverySettings();
+    }
   }, [activeTab]);
 
   const revenueData = useMemo(() => {
@@ -217,6 +238,54 @@ const AdminDashboard = ({ onBackToShop }) => {
   }, [allOrdersForRevenue]);
 
 
+
+  // Delivery Settings Handlers
+  const handleSaveDeliverySetting = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      if (isEditingSetting) {
+        await api.put(`/api/delivery-settings/${isEditingSetting}`, deliveryForm);
+        showToast('Delivery setting updated successfully');
+      } else {
+        await api.post('/api/delivery-settings', deliveryForm);
+        showToast('Delivery setting added successfully');
+      }
+      setDeliveryForm({ category: 'Honey', weight: '', charge: '' });
+      setIsEditingSetting(null);
+      fetchDeliverySettings();
+    } catch (err) {
+      console.error('Save delivery setting error:', err);
+      alert(err?.response?.data?.message || 'Failed to save delivery setting');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEditDeliverySetting = (setting) => {
+    setDeliveryForm({
+      category: setting.category,
+      weight: setting.weight,
+      charge: setting.charge
+    });
+    setIsEditingSetting(setting._id);
+  };
+
+  const handleDeleteDeliverySetting = async (id) => {
+    if (window.confirm('Are you sure you want to delete this setting?')) {
+      setActionLoading(true);
+      try {
+        await api.delete(`/api/delivery-settings/${id}`);
+        showToast('Delivery setting deleted');
+        fetchDeliverySettings();
+      } catch (err) {
+        console.error('Delete setting error:', err);
+        alert('Failed to delete setting');
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
 
   const handleStatusChange = async (orderId, newStatus) => {
     setActionLoading(true);
@@ -646,6 +715,16 @@ const AdminDashboard = ({ onBackToShop }) => {
         >
           <TrendingUp size={18} /> Revenue
         </button>
+        <button
+          onClick={() => setActiveTab('delivery')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
+            activeTab === 'delivery'
+              ? 'bg-[#3c2415] text-amber-100 shadow-md'
+              : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-100'
+          }`}
+        >
+          <Settings size={18} /> Delivery Settings
+        </button>
       </div>
 
       {loading ? (
@@ -901,6 +980,109 @@ const AdminDashboard = ({ onBackToShop }) => {
               </ResponsiveContainer>
             </div>
           )}
+        </div>
+      ) : activeTab === 'delivery' ? (
+        <div className="bg-white/70 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-black/10 shadow-sm max-w-5xl mx-auto">
+          <div className="mb-6">
+            <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#3c2415]">Delivery Charge Settings</h3>
+            <p className="text-xs text-amber-900/70 mt-1">
+              Configure delivery charges for specific categories based on weight. Orders exceeding 10,000 PKR get free delivery automatically.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 bg-white p-5 rounded-2xl border border-amber-200 shadow-sm">
+              <h4 className="font-bold text-[#3c2415] mb-4 text-sm">{isEditingSetting ? 'Edit Setting' : 'Add New Setting'}</h4>
+              <form onSubmit={handleSaveDeliverySetting} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Category</label>
+                  <select
+                    value={deliveryForm.category}
+                    onChange={(e) => setDeliveryForm({ ...deliveryForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                  >
+                    {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Weight (e.g., 500g, 1000g)</label>
+                  <input
+                    type="text"
+                    required
+                    value={deliveryForm.weight}
+                    onChange={(e) => setDeliveryForm({ ...deliveryForm, weight: e.target.value })}
+                    placeholder="e.g. 500g"
+                    className="w-full px-3 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#3c2415] uppercase mb-1">Delivery Charge (PKR)</label>
+                  <input
+                    type="number"
+                    required
+                    value={deliveryForm.charge}
+                    onChange={(e) => setDeliveryForm({ ...deliveryForm, charge: e.target.value })}
+                    placeholder="e.g. 150"
+                    className="w-full px-3 py-2 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="submit"
+                    disabled={actionLoading}
+                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-xl text-sm transition disabled:opacity-50"
+                  >
+                    {actionLoading ? 'Saving...' : 'Save'}
+                  </button>
+                  {isEditingSetting && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingSetting(null);
+                        setDeliveryForm({ category: 'Honey', weight: '', charge: '' });
+                      }}
+                      className="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            <div className="md:col-span-2 bg-white p-5 rounded-2xl border border-amber-200 shadow-sm overflow-x-auto">
+              <h4 className="font-bold text-[#3c2415] mb-4 text-sm">Configured Settings</h4>
+              {fetchingSettings ? (
+                <div className="text-center py-10 text-amber-800"><RefreshCw className="animate-spin inline mr-2" size={16} /> Loading...</div>
+              ) : deliverySettings.length === 0 ? (
+                <div className="text-center py-10 text-gray-500 text-sm">No delivery settings configured yet.</div>
+              ) : (
+                <table className="w-full text-left text-sm text-gray-600">
+                  <thead className="bg-amber-50/50 text-amber-900 font-bold border-b border-amber-100">
+                    <tr>
+                      <th className="py-2 px-3">Category</th>
+                      <th className="py-2 px-3">Weight</th>
+                      <th className="py-2 px-3">Charge (PKR)</th>
+                      <th className="py-2 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deliverySettings.map(setting => (
+                      <tr key={setting._id} className="border-b border-gray-50 hover:bg-amber-50/20 transition">
+                        <td className="py-2 px-3 font-medium text-[#3c2415]">{setting.category}</td>
+                        <td className="py-2 px-3">{setting.weight}</td>
+                        <td className="py-2 px-3 font-semibold text-amber-700">Rs. {setting.charge}</td>
+                        <td className="py-2 px-3 flex justify-end gap-2">
+                          <button onClick={() => handleEditDeliverySetting(setting)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"><Edit2 size={14} /></button>
+                          <button onClick={() => handleDeleteDeliverySetting(setting._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition"><Trash2 size={14} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       ) : (
         /* PRODUCT INVENTORY TAB */

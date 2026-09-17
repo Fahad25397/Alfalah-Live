@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '@/lib/api';
 
 const CartContext = createContext();
 
@@ -12,6 +13,19 @@ export const CartProvider = ({ children }) => {
     return [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [deliverySettings, setDeliverySettings] = useState([]);
+
+  useEffect(() => {
+    const fetchDeliverySettings = async () => {
+      try {
+        const response = await api.get('/api/delivery-settings');
+        setDeliverySettings(response.data);
+      } catch (err) {
+        console.error('Error fetching delivery settings:', err);
+      }
+    };
+    fetchDeliverySettings();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('alfalah_cart', JSON.stringify(cart));
@@ -58,6 +72,21 @@ export const CartProvider = ({ children }) => {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
 
+  let deliveryCharge = 0;
+  if (totalPrice > 10000) {
+    deliveryCharge = 0;
+  } else {
+    // Check specific items against delivery settings
+    cart.forEach(item => {
+      const setting = deliverySettings.find(s => s.category === item.category && s.weight === item.weight);
+      if (setting) {
+        deliveryCharge += setting.charge * item.quantity;
+      }
+    });
+  }
+
+  const finalTotal = totalPrice + deliveryCharge;
+
   return (
     <CartContext.Provider
       value={{
@@ -70,6 +99,8 @@ export const CartProvider = ({ children }) => {
         clearCart,
         totalItems,
         totalPrice,
+        deliveryCharge,
+        finalTotal,
       }}
     >
       {children}

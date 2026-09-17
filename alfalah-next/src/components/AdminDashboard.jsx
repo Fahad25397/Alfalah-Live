@@ -46,6 +46,12 @@ const AdminDashboard = ({ onBackToShop }) => {
   const [allOrdersForRevenue, setAllOrdersForRevenue] = useState([]);
   const [fetchingRevenue, setFetchingRevenue] = useState(false);
 
+  // Delivery Settings State
+  const [deliverySettings, setDeliverySettings] = useState([]);
+  const [fetchingSettings, setFetchingSettings] = useState(false);
+  const [deliveryForm, setDeliveryForm] = useState({ category: 'Honey', weight: '', charge: '' });
+  const [isEditingSetting, setIsEditingSetting] = useState(null);
+
   // Product Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -159,6 +165,18 @@ const AdminDashboard = ({ onBackToShop }) => {
     }
   };
 
+  const fetchDeliverySettings = async () => {
+    setFetchingSettings(true);
+    try {
+      const response = await api.get('/api/delivery-settings');
+      setDeliverySettings(response.data);
+    } catch (err) {
+      console.error('Error fetching delivery settings:', err);
+    } finally {
+      setFetchingSettings(false);
+    }
+  };
+
   const fetchProducts = async (page = 1) => {
     try {
       const response = await api.get(`/api/products?page=${page}&limit=12`);
@@ -192,6 +210,9 @@ const AdminDashboard = ({ onBackToShop }) => {
     if (activeTab === 'revenue' && allOrdersForRevenue.length === 0) {
       fetchAllOrdersForRevenue();
     }
+    if (activeTab === 'delivery' && deliverySettings.length === 0) {
+      fetchDeliverySettings();
+    }
   }, [activeTab]);
 
   const revenueData = useMemo(() => {
@@ -218,6 +239,54 @@ const AdminDashboard = ({ onBackToShop }) => {
   }, [allOrdersForRevenue]);
 
 
+
+  // Delivery Settings Handlers
+  const handleSaveDeliverySetting = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      if (isEditingSetting) {
+        await api.put(`/api/delivery-settings/${isEditingSetting}`, deliveryForm);
+        showToast('Delivery setting updated successfully');
+      } else {
+        await api.post('/api/delivery-settings', deliveryForm);
+        showToast('Delivery setting added successfully');
+      }
+      setDeliveryForm({ category: 'Honey', weight: '', charge: '' });
+      setIsEditingSetting(null);
+      fetchDeliverySettings();
+    } catch (err) {
+      console.error('Save delivery setting error:', err);
+      alert(err?.response?.data?.message || 'Failed to save delivery setting');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEditDeliverySetting = (setting) => {
+    setDeliveryForm({
+      category: setting.category,
+      weight: setting.weight,
+      charge: setting.charge
+    });
+    setIsEditingSetting(setting._id);
+  };
+
+  const handleDeleteDeliverySetting = async (id) => {
+    if (window.confirm('Are you sure you want to delete this setting?')) {
+      setActionLoading(true);
+      try {
+        await api.delete(`/api/delivery-settings/${id}`);
+        showToast('Delivery setting deleted');
+        fetchDeliverySettings();
+      } catch (err) {
+        console.error('Delete setting error:', err);
+        alert('Failed to delete setting');
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
 
   const handleStatusChange = async (orderId, newStatus) => {
     setActionLoading(true);
@@ -647,6 +716,16 @@ const AdminDashboard = ({ onBackToShop }) => {
         >
           <TrendingUp size={18} /> Revenue
         </button>
+        <button
+          onClick={() => setActiveTab('delivery')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition cursor-pointer ${
+            activeTab === 'delivery'
+              ? 'bg-[#3c2415] text-amber-100 shadow-md'
+              : 'bg-white text-gray-700 hover:bg-amber-50 border border-amber-100'
+          }`}
+        >
+          <Settings size={18} /> Delivery Settings
+        </button>
       </div>
 
       {loading ? (
@@ -900,6 +979,122 @@ const AdminDashboard = ({ onBackToShop }) => {
                   />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      ) : activeTab === 'delivery' ? (
+        <div className="bg-white/70 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-black/10 shadow-sm max-w-5xl mx-auto">
+          <div className="mb-6">
+            <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#3c2415]">Delivery Settings</h3>
+            <p className="text-xs text-amber-900/70 mt-1">
+              Configure delivery charges based on category and weight. Free delivery applies automatically for orders over 10,000 PKR.
+            </p>
+          </div>
+
+          <form onSubmit={handleSaveDeliverySetting} className="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-bold text-amber-900 mb-1">Category</label>
+              <select
+                value={deliveryForm.category}
+                onChange={(e) => setDeliveryForm({ ...deliveryForm, category: e.target.value })}
+                className="w-full border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 bg-[#faf8f5]"
+                required
+              >
+                {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-amber-900 mb-1">Weight (e.g. 500g, 1kg)</label>
+              <input
+                type="text"
+                value={deliveryForm.weight}
+                onChange={(e) => setDeliveryForm({ ...deliveryForm, weight: e.target.value })}
+                placeholder="e.g. 1kg"
+                className="w-full border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 bg-[#faf8f5]"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-amber-900 mb-1">Delivery Charge (PKR)</label>
+              <input
+                type="number"
+                value={deliveryForm.charge}
+                onChange={(e) => setDeliveryForm({ ...deliveryForm, charge: e.target.value })}
+                placeholder="e.g. 200"
+                className="w-full border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500 bg-[#faf8f5]"
+                required
+                min="0"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={actionLoading}
+                className="flex-1 bg-[#3c2415] text-white font-bold py-2 px-4 rounded-xl hover:bg-amber-900 transition flex items-center justify-center gap-2"
+              >
+                <Save size={16} /> {isEditingSetting ? 'Update' : 'Add'}
+              </button>
+              {isEditingSetting && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditingSetting(null);
+                    setDeliveryForm({ category: 'Honey', weight: '', charge: '' });
+                  }}
+                  className="px-3 py-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          </form>
+
+          {fetchingSettings ? (
+            <div className="text-center py-10 text-amber-800 flex justify-center items-center gap-2">
+              <RefreshCw className="animate-spin text-amber-700" size={24} />
+              Loading settings...
+            </div>
+          ) : deliverySettings.length === 0 ? (
+            <div className="text-center py-10 text-gray-500 bg-amber-50 rounded-xl">
+              No delivery settings found. Add one above.
+            </div>
+          ) : (
+            <div className="overflow-x-auto bg-white rounded-2xl border border-amber-200 shadow-sm">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-amber-100/50 text-[#3c2415] text-sm border-b border-amber-200">
+                    <th className="p-4 font-bold">Category</th>
+                    <th className="p-4 font-bold">Weight</th>
+                    <th className="p-4 font-bold">Delivery Charge</th>
+                    <th className="p-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-100">
+                  {deliverySettings.map(setting => (
+                    <tr key={setting._id} className="text-sm text-gray-700 hover:bg-amber-50/50">
+                      <td className="p-4 font-medium">{setting.category}</td>
+                      <td className="p-4">{setting.weight}</td>
+                      <td className="p-4 font-semibold text-amber-900">Rs. {setting.charge}</td>
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => handleEditDeliverySetting(setting)}
+                          className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition"
+                          title="Edit"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDeliverySetting(setting._id)}
+                          className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

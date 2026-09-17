@@ -6,7 +6,7 @@ import CheckoutModal from './CheckoutModal';
 import { getImageUrl } from '../api';
 
 const CartDrawer = () => {
-  const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, totalPrice, deliveryCharge, finalTotal } = useCart();
   const formatPrice = (price) => `Rs. ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -102,9 +102,22 @@ const CartDrawer = () => {
             {/* Footer Checkout Summary with Creamy Box Background */}
             {cart.length > 0 && (
               <div className="p-6 bg-[#f5eaba] border-t border-amber-200/40 space-y-4 m-4 rounded-3xl shadow-sm">
-                <div className="flex justify-between items-center text-lg font-bold text-[#3c2415]">
-                  <span>Total:</span>
-                  <span dir="ltr" className="text-[#3c2415]">{formatPrice(totalPrice)}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm font-medium text-[#3c2415]">
+                    <span>Subtotal:</span>
+                    <span dir="ltr" className="text-[#3c2415]">{formatPrice(totalPrice)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-medium text-[#3c2415]">
+                    <span>Delivery Charge:</span>
+                    <span dir="ltr" className="text-[#3c2415]">
+                      {deliveryCharge === 0 ? 'Free' : formatPrice(deliveryCharge)}
+                    </span>
+                  </div>
+                  <div className="border-t border-amber-900/10 my-2"></div>
+                  <div className="flex justify-between items-center text-lg font-bold text-[#3c2415]">
+                    <span>Total:</span>
+                    <span dir="ltr" className="text-[#3c2415]">{formatPrice(finalTotal)}</span>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setIsCheckoutOpen(true)}

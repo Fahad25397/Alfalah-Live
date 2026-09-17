@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 
 
 const CheckoutModal = ({ isOpen, onClose }) => {
-  const { cart, totalPrice, clearCart, setIsCartOpen } = useCart();
+  const { cart, finalTotal, clearCart, setIsCartOpen } = useCart();
   const formatPrice = (price) => `Rs. ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -35,7 +35,7 @@ const CheckoutModal = ({ isOpen, onClose }) => {
           quantity: item.quantity,
           price: item.price,
         })),
-        totalAmount: totalPrice,
+        totalAmount: finalTotal,
       };
 
       await api.post('/api/orders', orderData);
@@ -159,7 +159,7 @@ const CheckoutModal = ({ isOpen, onClose }) => {
               <div className="pt-4 border-t border-amber-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-xs text-amber-800 font-medium block">Total Due:</span>
-                  <span dir="ltr" className="text-xl font-bold text-amber-700">{formatPrice(totalPrice)}</span>
+                  <span dir="ltr" className="text-xl font-bold text-amber-700">{formatPrice(finalTotal)}</span>
                 </div>
 
                 <button

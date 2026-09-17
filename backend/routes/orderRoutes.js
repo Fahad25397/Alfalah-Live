@@ -7,7 +7,7 @@ const { protectAdmin } = require('../middleware/auth');
 // POST /api/orders - Create guest order
 router.post('/', async (req, res) => {
   try {
-    const { customer, items, totalAmount } = req.body;
+    const { customer, items, totalAmount, deliveryCharge } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'Cart is empty' });
@@ -17,6 +17,7 @@ router.post('/', async (req, res) => {
       customer,
       items,
       totalAmount,
+      deliveryCharge: deliveryCharge || 0,
     });
 
     const createdOrder = await order.save();

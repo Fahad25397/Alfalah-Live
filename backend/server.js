@@ -102,6 +102,7 @@ app.use('/api', (req, res, next) => {
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/delivery-settings', require('./routes/settingRoutes'));
 app.use('/api', require('./routes/seoRoutes'));
 
 // Serve Frontend Statically (Hostinger Single App Architecture)
