@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /admin
 Allow: /
 
-Sitemap: https://backend-beige-kappa-75.vercel.app/api/sitemap.xml
+Sitemap: https://alfalahhoney.com/api/sitemap.xml
