@@ -70,8 +70,8 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
   };
 
   return (
-    // Balanced mobile top padding (pt-20) so it doesn't touch the fixed navbar, while keeping laptop pt-24 intact
-    <div id="hero" className="w-full bg-[#faf8f5] pt-20 md:pt-24 pb-6 scroll-mt-28">
+    // Balanced mobile top padding (pt-28) so it doesn't touch the fixed navbar, while keeping laptop pt-32 intact
+    <div id="hero" className="w-full bg-[#faf8f5] pt-28 md:pt-32 pb-6 scroll-mt-28">
       {/* Navbar sits at the top */}
       <Navbar onOpenCart={onOpenCart} onOpenAdmin={onOpenAdmin} />
 

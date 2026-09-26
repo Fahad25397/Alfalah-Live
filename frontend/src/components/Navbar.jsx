@@ -3,6 +3,35 @@ import { ShoppingBag, Globe, Menu, X } from 'lucide-react';
 
 import { useCart } from '../context/CartContext';
 
+const AnnouncementBar = () => {
+  return (
+    <div className="w-full bg-[#3c2415] text-[#f4ecd8] py-2 overflow-hidden hover-pause z-[60] relative border-b border-amber-900/50 shadow-md">
+      <div className="max-w-7xl mx-auto flex items-center">
+        {/* Decorative elements */}
+        <div className="hidden sm:flex absolute left-4 items-center gap-2 z-10 bg-[#3c2415] px-2 shadow-[10px_0_15px_#3c2415]">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span className="text-xs font-bold tracking-wider text-amber-500 uppercase">Special Offer</span>
+        </div>
+        
+        {/* Marquee container */}
+        <div className="w-full flex whitespace-nowrap">
+          <div className="animate-marquee inline-block font-medium text-sm tracking-wide px-4">
+            🍯 <span className="text-amber-400 font-bold mx-1">FREE DELIVERY</span> ON ALL ORDERS ABOVE <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">10,000 RS</span> 🍯 
+            <span className="mx-8 text-amber-700/50">|</span>
+            100% PURE, RAW & UNFILTERED HONEY DIRECTLY FROM BEEKEEPERS 🐝
+          </div>
+          {/* Duplicate for seamless scrolling on wider screens */}
+          <div className="animate-marquee inline-block font-medium text-sm tracking-wide px-4" aria-hidden="true">
+            🍯 <span className="text-amber-400 font-bold mx-1">FREE DELIVERY</span> ON ALL ORDERS ABOVE <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">10,000 RS</span> 🍯 
+            <span className="mx-8 text-amber-700/50">|</span>
+            100% PURE, RAW & UNFILTERED HONEY DIRECTLY FROM BEEKEEPERS 🐝
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Navbar = () => {
 
   const { setIsCartOpen, totalItems } = useCart();
@@ -20,8 +49,10 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#EDC001]/95 backdrop-blur-md border-b border-amber-400/40 transition-all">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-16 py-4">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#EDC001]/95 backdrop-blur-md border-b border-amber-400/40 transition-all">
+        <AnnouncementBar />
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-16 py-4">
 
         {/* Brand Title */}
         <div className="flex items-center gap-3">
@@ -113,6 +144,7 @@ const Navbar = () => {
         </div>
       )}
     </header>
+    </>
   );
 };
 
