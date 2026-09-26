@@ -5,14 +5,18 @@ import axios from 'axios';
  */
 export const apiRequest = async (config) => {
   // Use relative path for all requests since API is on same domain
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
+  let baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
+  
+  if (typeof window === 'undefined' && !baseUrl.startsWith('http')) {
+    baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+  }
+
   const path = config.url.startsWith('/') ? config.url : `/${config.url}`;
   const fullUrl = `${baseUrl}${path}`;
 
   let token = null;
   if (typeof window !== 'undefined') {
-    // Client side token retrieval if needed, though Next.js uses httpOnly cookies 
-    // for admin_token now, so we don't strictly need to pass it in headers.
+    // Client side token retrieval if needed
     token = localStorage.getItem('admin_token');
   }
   
@@ -21,12 +25,21 @@ export const apiRequest = async (config) => {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  return await axios({
-    ...config,
-    url: fullUrl,
-    headers,
-    withCredentials: true, // Send cookies for admin routes
-  });
+  try {
+    return await axios({
+      ...config,
+      url: fullUrl,
+      headers,
+      withCredentials: true, // Send cookies for admin routes
+    });
+  } catch (error) {
+    // Graceful error handling for Next.js build time or SSR
+    if (typeof window === 'undefined') {
+      console.warn(`[Build/SSR] API request to ${fullUrl} failed:`, error.message);
+      return { data: [] }; // Return fallback empty data
+    }
+    throw error;
+  }
 };
 
 export const getImageUrl = (imagePath, requestedWidth = null) => {
