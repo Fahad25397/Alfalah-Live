@@ -233,3 +233,22 @@ html, body {
   }
 }
 
+/* Announcement Bar Marquee Animation */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.announcement-marquee {
+  animation: marquee-scroll 30s linear infinite;
+}
+
+.announcement-marquee:hover {
+  animation-play-state: paused;
+}
+
+

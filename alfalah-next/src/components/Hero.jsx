@@ -71,8 +71,8 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
   };
 
   return (
-    // Balanced mobile top padding (pt-20) so it doesn't touch the fixed navbar, while keeping laptop pt-24 intact
-    <section id="hero" aria-label="Featured Products Carousel" className="w-full bg-[#faf8f5] pt-20 md:pt-24 pb-6 scroll-mt-28">
+    // Balanced mobile top padding so it doesn't touch the fixed navbar + announcement bar
+    <section id="hero" aria-label="Featured Products Carousel" className="w-full bg-[#faf8f5] pt-28 md:pt-[7.5rem] pb-6 scroll-mt-36">
       {/* Navbar sits at the top */}
       <Navbar onOpenCart={onOpenCart} onOpenAdmin={onOpenAdmin} />
 
