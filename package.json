@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "build": "npm --prefix frontend install && npm --prefix frontend run build && rm -rf backend/public && cp -r frontend/dist backend/public",
     "dev": "npm --prefix frontend run dev",
-    "start": "node server.js"
+    "start": "node backend/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
