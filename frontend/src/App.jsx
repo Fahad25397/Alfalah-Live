@@ -10,7 +10,7 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import AdminDashboard from './components/AdminDashboard';
 import SEO from './components/SEO';
-import WhatsAppIcon from './components/WhatsAppIcon';
+import FloatingSocialIcons from './components/FloatingSocialIcons';
 import { Lock, ShieldCheck } from 'lucide-react';
 
 // Public Storefront Component
@@ -73,7 +73,7 @@ const Storefront = () => {
         onClose={() => setIsCartOpen(false)}
       />
       
-      <WhatsAppIcon />
+      <FloatingSocialIcons />
     </div>
   );
 };
