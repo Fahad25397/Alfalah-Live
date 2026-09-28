@@ -10,3 +10,4 @@ npm-debug.log*
 .wwebjs_cache/
 qr.txt
 test.png
+*_backup.json
