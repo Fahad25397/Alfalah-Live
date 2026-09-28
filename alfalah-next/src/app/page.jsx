@@ -8,7 +8,7 @@ import AboutBookSection from '@/components/AboutBookSection';
 import ContactUs from '@/components/ContactUs';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
-import WhatsAppIcon from '@/components/WhatsAppIcon';
+import FloatingSocialIcons from '@/components/FloatingSocialIcons';
 import SEO from '@/components/SEO';
 
 const SITE_URL = 'https://alfalahhoney.com';
@@ -164,7 +164,7 @@ export default function Storefront() {
         onClose={() => setIsCartOpen(false)}
       />
       
-      <WhatsAppIcon />
+      <FloatingSocialIcons />
     </div>
   );
 }
