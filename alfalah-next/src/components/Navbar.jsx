@@ -11,11 +11,9 @@ const AnnouncementBar = () => {
         {/* Duplicate the content several times for a seamless loop */}
         {[...Array(6)].map((_, i) => (
           <span key={i} className="inline-flex items-center gap-2 text-[#f4ecd8] text-xs sm:text-sm font-medium tracking-wide px-8">
-            🚚 <span className="text-amber-400 font-semibold">FREE Delivery Nationwide </span> on orders above <span className="text-amber-400 font-bold">Rs. 10,000!</span>
+            🚚 <span className="text-amber-400 font-semibold">Free Delivery All over Pakistan. </span> 
             <span className="mx-4 text-amber-600">✦</span>
-            🎁 Premium Quality Guaranteed
-            <span className="mx-4 text-amber-600">✦</span>
-            📦 Cash on Delivery Available Nationwide
+            📞 For any queries: <span className="text-amber-400 font-bold">03331010640</span> and <span className="text-amber-400 font-bold">03334445462</span>
             <span className="mx-4 text-amber-600">✦</span>
           </span>
         ))}

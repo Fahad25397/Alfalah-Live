@@ -7,24 +7,19 @@ const AnnouncementBar = () => {
   return (
     <div className="w-full bg-[#3c2415] text-[#f4ecd8] py-2 overflow-hidden hover-pause z-[60] relative border-b border-amber-900/50 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center">
-        {/* Decorative elements */}
-        <div className="hidden sm:flex absolute left-4 items-center gap-2 z-10 bg-[#3c2415] px-2 shadow-[10px_0_15px_#3c2415]">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-          <span className="text-xs font-bold tracking-wider text-amber-500 uppercase">Special Offer</span>
-        </div>
-        
+        {/* Decorative elements removed */}
         {/* Marquee container */}
         <div className="w-full flex whitespace-nowrap">
           <div className="animate-marquee inline-block font-medium text-sm tracking-wide px-4">
-            🍯 <span className="text-amber-400 font-bold mx-1">FREE DELIVERY</span> ON ALL ORDERS ABOVE <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">10,000 RS</span> 🍯 
+            🍯 <span className="text-amber-400 font-bold mx-1">Free Delivery All over Pakistan.</span> 
             <span className="mx-8 text-amber-700/50">|</span>
-            100% PURE, RAW & UNFILTERED HONEY DIRECTLY FROM BEEKEEPERS 🐝
+            📞 For any queries: <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">03331010640</span> and <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">03334445462</span>
           </div>
           {/* Duplicate for seamless scrolling on wider screens */}
           <div className="animate-marquee inline-block font-medium text-sm tracking-wide px-4" aria-hidden="true">
-            🍯 <span className="text-amber-400 font-bold mx-1">FREE DELIVERY</span> ON ALL ORDERS ABOVE <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">10,000 RS</span> 🍯 
+            🍯 <span className="text-amber-400 font-bold mx-1">Free Delivery All over Pakistan.</span> 
             <span className="mx-8 text-amber-700/50">|</span>
-            100% PURE, RAW & UNFILTERED HONEY DIRECTLY FROM BEEKEEPERS 🐝
+            📞 For any queries: <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">03331010640</span> and <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-bold mx-1 border border-amber-500/30">03334445462</span>
           </div>
         </div>
       </div>
