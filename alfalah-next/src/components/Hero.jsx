@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import Navbar from './Navbar';
-import { getImageUrl } from '@/lib/api';
 
 const slides = [
   {
