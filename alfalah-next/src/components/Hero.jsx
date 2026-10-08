@@ -94,7 +94,7 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
                   }`}
               >
                 <img
-                  src={getImageUrl(slide.image, 1600)}
+                  src={slide.image}
                   alt={`${slide.title} — ${slide.description.substring(0, 100)}`}
                   loading="eager"
                   decoding="async"
