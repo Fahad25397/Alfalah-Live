@@ -8,47 +8,47 @@ const slides = [
   {
     title: "Golden Goodness",
     description: "A naturally delicious choice for mindful everyday nourishment. Packed with antioxidants, vitamins, and minerals to support your immune system and overall vitality.",
-    image: "https://i.pinimg.com/736x/db/c7/88/dbc7888120028674c01df65eea66aa6b.jpg"
+    image: "/hero-images/hero-1.jpg"
   },
   {
     title: "Golden Ayurvedic Wellness",
     description: "Rich in CLA and fat-soluble vitamins, this golden superfood recharges your metabolism, reduces inflammation, and elevates your daily vitality.",
-    image: "https://i.pinimg.com/736x/c4/d1/f1/c4d1f11ba1ff102dc566ff683fc82c61.jpg"
+    image: "/hero-images/hero-2.jpg"
   },
   {
     title: "Organic Fruit Spread",
     description: "Crafted from 100% organic, sun-ripened fruit and sweetened naturally. Packed with vitamins and real fruit fiber to fuel your morning with clean energy.",
-    image: "https://i.pinimg.com/736x/a9/2b/19/a92b1968cbe9e8234695f1e692bc2fea.jpg"
+    image: "/hero-images/hero-3.jpg"
   },
   {
     title: "Premium Quality Imported Dates",
     description: "Handpicked from Madinah's finest organic groves. Packed with raw fiber, potassium, and antioxidants to naturally fuel your body, protect your heart, and elevate your daily wellness.",
-    image: "https://i.pinimg.com/736x/cd/6b/70/cd6b70759322c0ace9cfcde88faa1b2a.jpg"
+    image: "/hero-images/hero-4.jpg"
   },
   {
     title: "Faith In Every Drop",
     description: "Bring the blessed water of Zamzam closer to your home. Sourced from the sacred wells of Makkah, this pure and refreshing water is naturally alkaline, rich in minerals, and free from contaminants.",
-    image: "https://i.pinimg.com/1200x/d7/26/f3/d726f31bda765ec9bef5146a781e8e10.jpg"
+    image: "/hero-images/hero-5.jpg"
   },
   {
     title: "Olive Heritage",
     description: "Traditional olive goodness blended with quality and natural nourishment. Sustainably sourced from the Mediterranean, this premium olive oil is rich in antioxidants and heart-healthy fats to support your overall wellness.",
-    image: "https://i.pinimg.com/736x/9e/ae/cf/9eaecf78abe35db4fb23819bb7248064.jpg"
+    image: "/hero-images/hero-6.jpg"
   },
   {
     title: "Dry Fruits",
     description: "Nature's premium treasures: crunchy almonds, creamy cashews, and rich walnuts, crafted perfectly for your wholesome, aesthetic snacking moments.",
-    image: "https://i.pinimg.com/1200x/25/46/7d/25467d0bde67cb1c5171a1f7aa85e72b.jpg"
+    image: "/hero-images/hero-7.jpg"
   },
   {
     title: "Shilajit",
     description: "Pure, potent Ayurvedic resin: raw Himalayan shilajit, packed with fulvic acid to naturally elevate your daily energy, vitality, and aesthetic wellness routine.",
-    image: "https://i.pinimg.com/1200x/21/55/0b/21550b3e3ca539560f6963f6edf38332.jpg"
+    image: "/hero-images/hero-8.jpg"
   },
   {
     title: "Saffron",
     description: "Crimson threads of luxury: pure, handpicked royal saffron, releasing a golden glow and rich aroma for ultimate wellness excellence.",
-    image: "https://i.pinimg.com/1200x/7b/32/8b/7b328bdced1ff3db6faacf23d9a3445b.jpg"
+    image: "/hero-images/hero-9.jpg"
   }
 ];
 
