@@ -93,6 +93,7 @@ const Hero = ({ onOpenCart, onOpenAdmin }) => {
                   alt={slide.title}
                   loading="eager"
                   decoding="async"
+                  referrerPolicy="no-referrer"
                   width="1600"
                   height="900"
                   className={`w-full h-full object-cover object-center transition-transform duration-[7000ms] ease-out ${isActive ? 'scale-105' : 'scale-100'
